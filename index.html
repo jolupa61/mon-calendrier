@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Calendrier RDV</title>
     
+    <!-- Icône de l'application -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
+    <!-- FontAwesome pour la bibliothèque complète d'icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --bg-default: #F2F2F7;
@@ -31,6 +34,7 @@
             overflow: hidden;
         }
 
+        /* BARRE DE NAVIGATION */
         .header-bar {
             background-color: var(--bg-default);
             display: flex;
@@ -47,7 +51,7 @@
         }
 
         .btn {
-            background: rgba(0,0,0,0.05);
+            background: rgba(0,0,0,0.06);
             border: none;
             border-radius: 8px;
             padding: 8px 14px;
@@ -63,8 +67,8 @@
         .btn-circle {
             padding: 10px;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -78,10 +82,11 @@
         .month-title {
             font-size: 22px;
             font-weight: bold;
-            min-width: 150px;
+            min-width: 165px;
             text-align: center;
         }
 
+        /* CALENDRIER */
         .calendar-container {
             flex: 1;
             display: flex;
@@ -124,38 +129,41 @@
         }
 
         .day-number {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 900;
             margin-bottom: 5px;
         }
 
         .day-today .day-number {
-            color: var(--primary-color);
+            color: #007AFF;
         }
 
         .empty-cell {
             visibility: hidden;
         }
 
+        /* BADGES RDV DANS LES CASES */
         .rdv-dots-container {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             flex-wrap: wrap;
             margin-top: auto;
         }
 
         .rdv-badge {
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            font-size: 16px;
         }
 
+        /* LISTE DÉROULANTE TOUS LES RDV */
         .dropdown {
             position: relative;
             display: inline-block;
@@ -165,33 +173,36 @@
             display: none;
             position: absolute;
             background-color: #ffffff;
-            min-width: 250px;
-            box-shadow: 0px 8px 16px rgba(0,0,0,0.15);
-            border-radius: 8px;
+            min-width: 320px;
+            box-shadow: 0px 8px 24px rgba(0,0,0,0.15);
+            border-radius: 10px;
             z-index: 10;
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
             right: 0;
+            border: 1px solid #e5e5e5;
         }
 
         .dropdown-content button {
             width: 100%;
-            padding: 12px;
+            padding: 12px 16px;
             text-align: left;
             background: none;
             border: none;
             cursor: pointer;
-            border-bottom: 1px solid #f1f1f1;
+            border-bottom: 1px solid #f2f2f7;
             font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            color: #000000;
         }
 
         .dropdown-content button:hover {
-            background-color: #f1f1f1;
+            background-color: #f2f2f7;
         }
 
+        /* FENÊTRES MODALES (RDV & RÉGLAGES) */
         .modal {
             display: none;
             position: fixed;
@@ -200,22 +211,35 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
             background-color: white;
             padding: 25px;
             border-radius: 16px;
-            width: 500px;
+            width: 550px;
             max-width: 90%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            color: #000000;
+        }
+
+        .settings-layout {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .settings-col {
+            flex: 1;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
 
         .form-group label {
@@ -228,6 +252,7 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 15px;
+            font-family: inherit;
         }
 
         .time-select-container {
@@ -239,7 +264,9 @@
             display: flex;
             justify-content: space-between;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 24px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
 
         .modal-actions-right {
@@ -253,32 +280,77 @@
             color: white;
         }
 
+        /* SÉLECTEURS GRAPHIQUES (COULEURS ET ICÔNES) */
         .picker-container {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            background: #f8f8fa;
+            padding: 12px;
+            border-radius: 10px;
         }
 
         .color-dot-opt {
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             cursor: pointer;
-            border: 2px solid transparent;
+            border: 3px solid transparent;
+            box-sizing: border-box;
         }
 
         .color-dot-opt.selected {
-            border-color: #000;
+            border-color: #007AFF;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            background: #f8f8fa;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .icon-opt {
+            height: 44px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .icon-opt.selected {
+            background-color: rgba(0, 122, 255, 0.15);
+            border: 2px solid #007AFF;
+            color: #007AFF;
+        }
+
+        .category-list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .category-list-item input {
+            flex: 1;
+            padding: 6px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header-bar">
+    <!-- BARRE DE NAVIGATION PRINCIPALE -->
+    <div class="header-bar" id="mainHeader">
         <div class="header-left">
-            <button class="btn btn-circle" onclick="if(confirm('Voulez-vous effacer TOUS vos rendez-vous ?')) { appointments=[]; localStorage.removeItem('appointments'); renderCalendar(); }" title="Réinitialiser le calendrier">
-                <i class="fa-solid fa-gear"></i>
-            </button>
+            <button class="btn btn-circle" onclick="openSettings()"><i class="fa-solid fa-gear"></i></button>
             <select id="yearSelect" class="btn" onchange="changeYear(this.value)"></select>
         </div>
         
@@ -297,13 +369,15 @@
         </div>
     </div>
 
+    <!-- GRILLE DE CALENDRIER -->
     <div class="calendar-container">
-        <div class="weekdays-grid">
+        <div class="weekdays-grid" id="weekdaysHeader">
             <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
         </div>
         <div class="days-grid" id="daysGrid"></div>
     </div>
 
+    <!-- MODAL 1 : FORMULAIRE RDV AVEC ICÔNES ET CATÉGORIES -->
     <div class="modal" id="rdvModal">
         <div class="modal-content">
             <h2 id="modalTitle" style="margin-top:0;">Nouveau RDV</h2>
@@ -312,7 +386,7 @@
 
             <div class="form-group">
                 <label>Titre ou description</label>
-                <input type="text" id="rdvTitleInput" required placeholder="Ex: Dentiste, Réunion...">
+                <input type="text" id="rdvTitleInput" required placeholder="Ex: Dentiste, Ophtalmo, Coiffeur...">
             </div>
 
             <div class="form-group">
@@ -325,52 +399,161 @@
 
             <div class="form-group">
                 <label>Lieu ou Lien vidéo</label>
-                <input type="text" id="rdvLocation" placeholder="Adresse, Zoom...">
+                <input type="text" id="rdvLocation" placeholder="Adresse, Cabinet, Visio...">
             </div>
 
             <div class="form-group">
                 <label>Notes complémentaires</label>
-                <textarea id="rdvNotes" rows="3"></textarea>
+                <textarea id="rdvNotes" rows="2"></textarea>
             </div>
 
+            <!-- CHOIX DE L'ICÔNE ENRICHIE -->
             <div class="form-group">
-                <label>Catégorie</label>
-                <div class="picker-container" id="colorPickerContainer"></div>
+                <label>Choisir une icône illustrative</label>
+                <div class="icon-grid" id="iconPickerContainer"></div>
+            </div>
+
+            <!-- CHOIX DE LA CATÉGORIE ENRICHIE -->
+            <div class="form-group">
+                <label>Choisir une catégorie</label>
+                <div id="rdvCategorySelectorContainer" style="display:flex; flex-direction:column; gap:6px;"></div>
             </div>
 
             <div class="modal-actions">
-                <button class="btn btn-danger" id="btnDeleteRdv" onclick="deleteRdv()" style="display:none;">Supprimer</button>
+                <button class="btn btn-danger" id="btnDeleteRdv" onclick="deleteRdv()">Supprimer</button>
                 <div class="modal-actions-right">
-                    <button class="btn" onclick="closeModal()">Annuler</button>
+                    <button class="btn" onclick="closeModal('rdvModal')">Annuler</button>
                     <button class="btn btn-primary" onclick="saveRdv()">Enregistrer</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL 2 : CONFIGURATION COMPLÈTE (ROUE DENTÉE) -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content" style="width: 850px;">
+            <h2 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom:10px;">Réglages Généraux</h2>
+            
+            <div class="settings-layout">
+                <!-- COLONNE GAUCHE : GESTION DES CATÉGORIES -->
+                <div class="settings-col">
+                    <h3>Noms des catégories</h3>
+                    <div id="settingsCategoriesContainer"></div>
+                    
+                    <h3 style="margin-top:20px;">Ajouter une catégorie</h3>
+                    <div class="form-group">
+                        <input type="text" id="newCatName" placeholder="Nom (ex: Privé, Médical...)">
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur associée</label>
+                        <div class="picker-container" id="newCatColorPicker"></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addNewCategory()" style="width:100%;">Ajouter la catégorie</button>
+                </div>
+                
+                <div style="width:1px; background:#ccc; margin: 0 10px;"></div>
+
+                <!-- COLONNE DROITE : DESIGN INTERFACE -->
+                <div class="settings-col">
+                    <h3>Couleurs de l'interface</h3>
+                    <div class="form-group">
+                        <label>Couleur du texte général</label>
+                        <input type="color" id="setHexText" onchange="saveInterfaceSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>Bordures de la grille</label>
+                        <input type="color" id="setHexGrid" onchange="saveInterfaceSettings()">
+                    </div>
+                    
+                    <h3>Couleurs des cases</h3>
+                    <div class="form-group">
+                        <label>Fond par défaut</label>
+                        <input type="color" id="setHexBg" onchange="saveInterfaceSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>Fond des Week-ends</label>
+                        <input type="color" id="setHexWeekend" onchange="saveInterfaceSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>Fond des Jours Fériés</label>
+                        <input type="color" id="setHexHoliday" onchange="saveInterfaceSettings()">
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="clearAllData()" style="width:100%; margin-top:30px;"><i class="fa-solid fa-trash"></i> Réinitialiser toute l'App</button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <div class="modal-actions-right">
+                    <button class="btn btn-primary" onclick="closeModal('settingsModal')">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIQUE LOGICIELLE (JAVASCRIPT NATIVE) -->
     <script>
         let currentDate = new Date();
-        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-        let selectedColorHex = "#FF3B30";
+        let appointments = JSON.parse(localStorage.getItem('web_appointments')) || [];
+        
+        // PARAMÈTRES INTERFACE PAR DÉFAUT
+        let uiSettings = JSON.parse(localStorage.getItem('web_ui_settings')) || {
+            textHex: "#000000",
+            gridHex: "#E5E5EA",
+            bgHex: "#F2F2F7",
+            weekendBgHex: "#FFE5E5",
+            holidayBgHex: "#E5FFE5"
+        };
 
-        const defaultColors = [
-            { name: "Travail", hex: "#007AFF" },
-            { name: "Perso", hex: "#34C759" },
-            { name: "Urgent", hex: "#FF3B30" },
-            { name: "Important", hex: "#000000" },
-            { name: "Blanc", hex: "#FFFFFF" }
+        // BASE DE COULEURS ET CATÉGORIES PAR DÉFAUT
+        let customCategories = JSON.parse(localStorage.getItem('web_custom_categories')) || [
+            { id: "1", name: "Travail", hex: "#007AFF" },
+            { id: "2", name: "Perso", hex: "#34C759" },
+            { id: "3", name: "Urgent", hex: "#FF3B30" },
+            { id: "4", name: "Important", hex: "#000000" },
+            { id: "5", name: "Blanc", hex: "#FFFFFF" }
         ];
 
+        let currentSelectedColor = "#FF3B30";
+        let currentSelectedIcon = "fa-calendar";
+        let newCatSelectedHex = "#007AFF";
+
+        // PALETTE STANDARD DES MODALES
+        const colorPalette = [
+            "#000000", "#3A3A3C", "#8E8E93", "#AEAEB2", "#E5E5EA", "#FFFFFF",
+            "#007AFF", "#34C759", "#FF3B30", "#AF52DE", "#FF9500", "#FFCC00",
+            "#4A2C11", "#A0522D", "#D2B48C", "#FFE5E5", "#E5FFE5", "#E5F5FF"
+        ];
+
+        // BIBLIOTHÈQUE COMPLÈTE DES ICÔNES DEMANDÉES (Médecin, ciseaux, etc.)
+        const iconLibrary = [
+            { class: "fa-calendar", name: "Calendrier" },
+            { class: "fa-stethoscope", name: "Médecin" },
+            { class: "fa-pills", name: "Pharmacie" },
+            { class: "fa-eyeglasses", name: "Oculiste / Ophtalmo" },
+            { class: "fa-scissors", name: "Coiffeur" },
+            { class: "fa-briefcase", name: "Travail" },
+            { class: "fa-house", name: "Maison" },
+            { class: "fa-wrench", name: "Artisan / Réparation" },
+            { class: "fa-phone", name: "Téléphone" },
+            { class: "fa-envelope", name: "Courrier" },
+            { class: "fa-cart-shopping", name: "Courses" },
+            { class: "fa-car", name: "Garage / Transport" }
+        ];
+
+        // INITIALISATION DES COMPOSANTS
         function init() {
             setupYearSelect();
             setupTimeSelects();
+            applyUiSettings();
+            buildIconPicker();
             renderCalendar();
-            setupColorPicker();
         }
 
         function setupYearSelect() {
             const select = document.getElementById('yearSelect');
             const currentYear = new Date().getFullYear();
+            select.innerHTML = '';
             for(let i = currentYear - 10; i <= currentYear + 20; i++) {
                 let opt = document.createElement('option');
                 opt.value = i; opt.innerText = i;
@@ -382,6 +565,7 @@
         function setupTimeSelects() {
             const hSelect = document.getElementById('rdvHour');
             const mSelect = document.getElementById('rdvMinute');
+            hSelect.innerHTML = ''; mSelect.innerHTML = '';
             for(let i=0; i<24; i++) {
                 hSelect.innerHTML += `<option value="${i}">${String(i).padStart(2, '0')}h</option>`;
             }
@@ -390,37 +574,99 @@
             });
         }
 
-        function setupColorPicker() {
-            const container = document.getElementById('colorPickerContainer');
+        function applyUiSettings() {
+            // Appliquer les variables dynamiques CSS
+            document.documentElement.style.setProperty('--bg-default', uiSettings.bgHex);
+            document.documentElement.style.setProperty('--text-default', uiSettings.textHex);
+            document.documentElement.style.setProperty('--grid-default', uiSettings.gridHex);
+            document.documentElement.style.setProperty('--weekend-bg', uiSettings.weekendBgHex);
+            document.documentElement.style.setProperty('--holiday-bg', uiSettings.holidayBgHex);
+
+            // Synchroniser les entrées du panneau de contrôle
+            document.getElementById('setHexText').value = uiSettings.textHex;
+            document.getElementById('setHexGrid').value = uiSettings.gridHex;
+            document.getElementById('setHexBg').value = uiSettings.bgHex;
+            document.getElementById('setHexWeekend').value = uiSettings.weekendBgHex;
+            document.getElementById('setHexHoliday').value = uiSettings.holidayBgHex;
+            
+            // Adapter le texte de la barre du haut en fonction de la luminance (Contraste)
+            let colorForegroundColor = getAccessibleTextColor(uiSettings.bgHex);
+            document.getElementById('mainHeader').style.color = colorForegroundColor;
+            document.getElementById('weekdaysHeader').style.color = uiSettings.textHex;
+        }
+
+        function buildIconPicker() {
+            const container = document.getElementById('iconPickerContainer');
             container.innerHTML = '';
-            defaultColors.forEach((color, index) => {
+            iconLibrary.forEach(ico => {
                 let div = document.createElement('div');
-                div.className = 'color-dot-opt' + (index === 2 ? ' selected' : '');
-                div.style.backgroundColor = color.hex;
-                if(color.hex === '#FFFFFF') div.style.border = '1px solid #ccc';
+                div.className = 'icon-opt';
+                div.id = `ico-${ico.class}`;
+                div.innerHTML = `<i class="fa-solid ${ico.class}"></i>`;
+                div.title = ico.name;
                 div.onclick = () => {
-                    document.querySelectorAll('.color-dot-opt').forEach(d => d.classList.remove('selected'));
+                    document.querySelectorAll('.icon-opt').forEach(el => el.classList.remove('selected'));
                     div.classList.add('selected');
-                    selectedColorHex = color.hex;
+                    currentSelectedIcon = ico.class;
                 };
                 container.appendChild(div);
             });
         }
 
+        // CALCULS DES JOURS FÉRIÉS (Équivalent de l'algorithme SwiftMac)
+        function isHoliday(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+
+            // Jours fixes
+            if ((month == 1 && day == 1) || (month == 5 && day == 1) || (month == 5 && day == 8) ||
+               (month == 7 && day == 14) || (month == 8 && day == 15) || (month == 11 && day == 1) ||
+               (month == 11 && day == 11) || (month == 12 && day == 25)) {
+                return true;
+            }
+
+            // Calcul de Pâques (Meeus/Jones/Butcher)
+            let a = year % 19, b = Math.floor(year / 100), c = year % 100;
+            let d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+            let g = Math.floor((b - f + 1) / 3);
+            let h = (19 * a + b - d - g + 15) % 30;
+            let i = Math.floor(c / 4), k = c % 4;
+            let l = (32 + 2 * e + 2 * i - h - k) % 7;
+            let m = Math.floor((a + 11 * h + 22 * l) / 451);
+            let easterMonth = Math.floor((h + l - 7 * m + 114) / 31);
+            let easterDay = ((h + l - 7 * m + 114) % 31) + 1;
+
+            let easterDate = new Date(year, easterMonth - 1, easterDay);
+            
+            // Jours mobiles calculés
+            let easterMonday = new Date(easterDate); easterMonday.setDate(easterMonday.getDate() + 1);
+            let ascension = new Date(easterDate); ascension.setDate(ascension.getDate() + 39);
+            let pentecostMonday = new Date(easterDate); pentecostMonday.setDate(pentecostMonday.getDate() + 50);
+
+            return isSameDay(date, easterMonday) || isSameDay(date, ascension) || isSameDay(date, pentecostMonday);
+        }
+
+        function isSameDay(d1, d2) {
+            return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
+        }
+
+        // DESSIN DU CALENDRIER
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             
             document.getElementById('yearSelect').value = year;
-            document.getElementById('monthTitle').innerText = currentDate.toLocaleDateString('fr-FR', { month: 'long' }).toUpperCase();
+            document.getElementById('monthTitle').innerText = currentDate.toLocaleDateString('fr-FR', { month: 'long' }).toUpperCase() + ' ' + year;
             
             const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const gridOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+            const gridOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
 
             const grid = document.getElementById('daysGrid');
             grid.innerHTML = '';
 
+            // Injection des offsets vides
             for(let i = 0; i < gridOffset; i++) {
                 grid.innerHTML += `<div class="day-cell empty-cell"></div>`;
             }
@@ -429,11 +675,18 @@
             for(let day = 1; day <= daysInMonth; day++) {
                 const targetDate = new Date(year, month, day);
                 let classes = ['day-cell'];
+                let inlineStyle = `border-color: var(--grid-default); color: var(--text-default);`;
                 
+                // Vérifications de type de jour
                 if(targetDate.getDay() === 0 || targetDate.getDay() === 6) {
-                    classes.push('weekend-cell');
+                    inlineStyle += `background-color: var(--weekend-bg);`;
+                } else if(isHoliday(targetDate)) {
+                    inlineStyle += `background-color: var(--holiday-bg);`;
+                } else {
+                    inlineStyle += `background-color: var(--bg-default);`;
                 }
-                if(isToday(targetDate, today)) {
+
+                if(isSameDay(targetDate, today)) {
                     classes.push('day-today');
                 }
 
@@ -444,16 +697,18 @@
                 if(dayRdvs.length > 0) {
                     rdvHTML = `<div class="rdv-dots-container">`;
                     dayRdvs.forEach(rdv => {
-                        let borderStyle = rdv.color === '#FFFFFF' ? 'border: 2px solid #000; color: #000;' : '';
-                        rdvHTML += `<div class="rdv-badge" style="background-color: ${rdv.color}; ${borderStyle}" onclick="event.stopPropagation(); editRdv('${rdv.id}')"><i class="fa-solid fa-calendar-day"></i></div>`;
+                        let textBadgeColor = getAccessibleTextColor(rdv.color);
+                        let borderStyle = rdv.color.toUpperCase() === '#FFFFFF' ? 'border: 2px solid #000;' : '';
+                        rdvHTML += `
+                            <div class="rdv-badge" style="background-color: ${rdv.color}; color: ${textBadgeColor}; ${borderStyle}" onclick="event.stopPropagation(); editRdv('${rdv.id}')" title="${String(rdv.hour).padStart(2, '0')}h${String(rdv.minute).padStart(2, '0')} : ${rdv.title}">
+                                <i class="fa-solid ${rdv.icon || 'fa-calendar'}"></i>
+                            </div>`;
                     });
                     rdvHTML += `</div>`;
                 }
 
-                let inlineStyle = (targetDate.getDay() === 0 || targetDate.getDay() === 6) ? `style="background-color: var(--weekend-bg);"` : '';
-
                 grid.innerHTML += `
-                    <div class="${classes.join(' ')}" ${inlineStyle} onclick="openNewRdv('${dateKey}')">
+                    <div class="${classes.join(' ')}" style="${inlineStyle}" onclick="openNewRdv('${dateKey}')">
                         <div class="day-number">${day}</div>
                         ${rdvHTML}
                     </div>
@@ -461,33 +716,15 @@
             }
 
             document.getElementById('rdvCount').innerText = appointments.length;
-            
-            if(year === today.getFullYear() && month === today.getMonth()) {
-                document.getElementById('btnToday').style.opacity = '0.5';
-            } else {
-                document.getElementById('btnToday').style.opacity = '1';
-            }
+            document.getElementById('btnToday').style.opacity = (year === today.getFullYear() && month === today.getMonth()) ? '0.5' : '1';
         }
 
-        function isToday(d1, d2) {
-            return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
-        }
+        // INTERACTION MOIS / ANNÉE
+        function navigateMonth(val) { currentDate.setMonth(currentDate.getMonth() + val); renderCalendar(); }
+        function changeYear(year) { currentDate.setFullYear(parseInt(year)); renderCalendar(); }
+        function goToToday() { currentDate = new Date(); renderCalendar(); }
 
-        function navigateMonth(val) {
-            currentDate.setMonth(currentDate.getMonth() + val);
-            renderCalendar();
-        }
-
-        function changeYear(year) {
-            currentDate.setFullYear(parseInt(year));
-            renderCalendar();
-        }
-
-        function goToToday() {
-            currentDate = new Date();
-            renderCalendar();
-        }
-
+        // EXÉCUTION DU FORMULAIRE RDV
         function openNewRdv(dateKey) {
             document.getElementById('modalTitle').innerText = "Nouveau RDV";
             document.getElementById('rdvId').value = '';
@@ -497,8 +734,45 @@
             document.getElementById('rdvMinute').value = '0';
             document.getElementById('rdvLocation').value = '';
             document.getElementById('rdvNotes').value = '';
+            
+            // Sélection par défaut
+            currentSelectedIcon = "fa-calendar";
+            document.querySelectorAll('.icon-opt').forEach(el => el.classList.remove('selected'));
+            document.getElementById('ico-fa-calendar').classList.add('selected');
+            
+            if(customCategories.length > 0) currentSelectedColor = customCategories[0].hex;
+            buildRdvCategorySelector();
+
             document.getElementById('btnDeleteRdv').style.display = 'none';
             document.getElementById('rdvModal').style.display = 'flex';
+        }
+
+        function buildRdvCategorySelector() {
+            const container = document.getElementById('rdvCategorySelectorContainer');
+            container.innerHTML = '';
+            customCategories.forEach(cat => {
+                let row = document.createElement('div');
+                row.style = "display:flex; align-items:center; justify-content:space-between; padding:8px; background:#fff; border:1px solid #e5e5e5; border-radius:8px; cursor:pointer;";
+                row.onclick = () => {
+                    currentSelectedColor = cat.hex;
+                    buildRdvCategorySelector(); // rafraichir les coches
+                };
+
+                let left = document.createElement('div');
+                left.style = "display:flex; align-items:center; gap:10px;";
+                let dot = document.createElement('div');
+                dot.style = `width:20px; height:20px; border-radius:50%; background-color:${cat.hex}; border:1px solid #ccc;`;
+                let txt = document.createElement('span');
+                txt.innerText = cat.name;
+                
+                left.appendChild(dot); left.appendChild(txt);
+                row.appendChild(left);
+
+                if(currentSelectedColor === cat.hex) {
+                    row.innerHTML += `<i class="fa-solid fa-checkmark" style="color:#007AFF; font-weight:bold;"></i>`;
+                }
+                container.appendChild(row);
+            });
         }
 
         function editRdv(id) {
@@ -514,26 +788,19 @@
             document.getElementById('rdvLocation').value = rdv.location || '';
             document.getElementById('rdvNotes').value = rdv.notes || '';
             
-            selectedColorHex = rdv.color;
-            document.querySelectorAll('.color-dot-opt').forEach(div => {
-                if(div.style.backgroundColor === rdv.color || (rdv.color === '#FFFFFF' && div.style.backgroundColor === 'rgb(255, 255, 255)')) {
-                    div.classList.add('selected');
-                } else {
-                    div.classList.remove('selected');
-                }
-            });
+            // Sélection icône enregistrée
+            currentSelectedIcon = rdv.icon || "fa-calendar";
+            document.querySelectorAll('.icon-opt').forEach(el => el.classList.remove('selected'));
+            let targetIcoNode = document.getElementById(`ico-${currentSelectedIcon}`);
+            if(targetIcoNode) targetIcoNode.classList.add('selected');
+
+            // Sélection couleur enregistrée
+            currentSelectedColor = rdv.color;
+            buildRdvCategorySelector();
 
             document.getElementById('btnDeleteRdv').style.display = 'block';
             document.getElementById('rdvModal').style.display = 'flex';
         }
-
-        function closeModal() {
-            document.getElementById('rdvModal').style.display = 'none';
-        }
-
-        document.getElementById('rdvModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
 
         function saveRdv() {
             const title = document.getElementById('rdvTitleInput').value;
@@ -549,33 +816,122 @@
             if(id) {
                 let rdv = appointments.find(r => r.id === id);
                 rdv.title = title; rdv.hour = hour; rdv.minute = minute;
-                rdv.location = location; rdv.notes = notes; rdv.color = selectedColorHex;
+                rdv.location = location; rdv.notes = notes; rdv.color = currentSelectedColor; rdv.icon = currentSelectedIcon;
             } else {
                 appointments.push({
                     id: Date.now().toString(),
-                    dateStr, title, hour, minute, location, notes, color: selectedColorHex
+                    dateStr, title, hour, minute, location, notes, color: currentSelectedColor, icon: currentSelectedIcon
                 });
             }
 
-            localStorage.setItem('appointments', JSON.stringify(appointments));
-            closeModal();
+            localStorage.setItem('web_appointments', JSON.stringify(appointments));
+            closeModal('rdvModal');
             renderCalendar();
         }
 
         function deleteRdv() {
             const id = document.getElementById('rdvId').value;
             appointments = appointments.filter(r => r.id !== id);
-            localStorage.setItem('appointments', JSON.stringify(appointments));
-            closeModal();
+            localStorage.setItem('web_appointments', JSON.stringify(appointments));
+            closeModal('rdvModal');
             renderCalendar();
         }
 
+        // FENÊTRE CONFIGURATION GÉNERALE (ROUE DENTÉE)
+        function openSettings() {
+            buildSettingsCategoriesList();
+            buildNewCatColorPicker();
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function buildSettingsCategoriesList() {
+            const container = document.getElementById('settingsCategoriesContainer');
+            container.innerHTML = '';
+            customCategories.forEach((cat, index) => {
+                let div = document.createElement('div');
+                div.className = 'category-list-item';
+                
+                let dot = document.createElement('div');
+                dot.style = `width:24px; height:24px; border-radius:50%; background-color:${cat.hex}; border:1px solid #ccc; flex-shrink:0;`;
+                
+                let input = document.createElement('input');
+                input.type = 'text';
+                input.value = cat.name;
+                input.onchange = (e) => {
+                    customCategories[index].name = e.target.value;
+                    localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
+                };
+
+                let btnDel = document.createElement('button');
+                btnDel.className = 'btn btn-danger';
+                btnDel.style = 'padding: 5px 10px; font-size:12px;';
+                btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                btnDel.onclick = () => {
+                    customCategories.splice(index, 1);
+                    localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
+                    buildSettingsCategoriesList();
+                };
+
+                div.appendChild(dot); div.appendChild(input); div.appendChild(btnDel);
+                container.appendChild(div);
+            });
+        }
+
+        function buildNewCatColorPicker() {
+            const container = document.getElementById('newCatColorPicker');
+            container.innerHTML = '';
+            colorPalette.forEach(hex => {
+                let dot = document.createElement('div');
+                dot.className = 'color-dot-opt' + (hex === newCatSelectedHex ? ' selected' : '');
+                dot.style.backgroundColor = hex;
+                if(hex === '#FFFFFF') dot.style.border = '1px solid #ccc';
+                dot.onclick = () => {
+                    newCatSelectedHex = hex;
+                    buildNewCatColorPicker();
+                };
+                container.appendChild(dot);
+            });
+        }
+
+        function addNewCategory() {
+            const nameInput = document.getElementById('newCatName');
+            if(!nameInput.value) return alert("Indiquez un nom de catégorie");
+            
+            customCategories.push({
+                id: Date.now().toString(),
+                name: nameInput.value,
+                hex: newCatSelectedHex
+            });
+            localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
+            nameInput.value = '';
+            buildSettingsCategoriesList();
+        }
+
+        function saveInterfaceSettings() {
+            uiSettings.textHex = document.getElementById('setHexText').value;
+            uiSettings.gridHex = document.getElementById('setHexGrid').value;
+            uiSettings.bgHex = document.getElementById('setHexBg').value;
+            uiSettings.weekendBgHex = document.getElementById('setHexWeekend').value;
+            uiSettings.holidayBgHex = document.getElementById('setHexHoliday').value;
+            
+            localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
+            applyUiSettings();
+            renderCalendar();
+        }
+
+        function clearAllData() {
+            if(confirm("Attention : cela va détruire la totalité de vos données et réglages. Continuer ?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+
+        // GESTION DE LA LISTE GLOBALE déroulante
         function toggleDropdown() {
             const drop = document.getElementById('allRdvDropdown');
-            if(drop.style.display === 'block') {
-                drop.style.display = 'none';
-                return;
-            }
+            if(drop.style.display === 'block') { drop.style.display = 'none'; return; }
 
             drop.innerHTML = '';
             let sorted = [...appointments].sort((a,b) => {
@@ -584,27 +940,37 @@
             });
 
             if(sorted.length === 0) {
-                drop.innerHTML = `<button disabled>Aucun rendez-vous</button>`;
+                drop.innerHTML = `<button disabled>Aucun rendez-vous enregistré</button>`;
             } else {
                 sorted.forEach(rdv => {
                     let d = rdv.dateStr.split('-');
-                    let dateLabel = `${d[2]}/${d[1]}`;
+                    let dateFormatted = `${d[2]}/${d[1]}/${d[0]}`;
                     let btn = document.createElement('button');
-                    btn.innerHTML = `<i class="fa-solid fa-calendar-day" style="color:${rdv.color}"></i> <b>${dateLabel} à ${String(rdv.hour).padStart(2,'0')}h${String(rdv.minute).padStart(2,'0')}</b> : ${rdv.title}`;
-                    btn.onclick = () => {
-                        drop.style.display = 'none';
-                        editRdv(rdv.id);
-                    };
+                    btn.innerHTML = `<i class="fa-solid ${rdv.icon || 'fa-calendar'}" style="color:${rdv.color}"></i> <b>${dateFormatted} à ${String(rdv.hour).padStart(2,'0')}h${String(rdv.minute).padStart(2,'0')}</b> : ${rdv.title}`;
+                    btn.onclick = () => { drop.style.display = 'none'; editRdv(rdv.id); };
                     drop.appendChild(btn);
                 });
             }
             drop.style.display = 'block';
         }
 
+        // LUMINANCE / LISIBILITÉ DU TEXTE
+        function getAccessibleTextColor(hex) {
+            let c = hex.substring(1);
+            let rgb = parseInt(c, 16);
+            let r = (rgb >> 16) & 0xff;
+            let g = (rgb >> 8) & 0xff;
+            let b = (rgb >> 0) & 0xff;
+            let luma = 0.299 * r + 0.587 * g + 0.114 * b;
+            return luma < 120 ? '#ffffff' : '#000000';
+        }
+
+        // Clic en dehors pour fermer les menus ou fenêtres
         window.onclick = function(event) {
             if (!event.target.matches('.btn') && !event.target.closest('.dropdown')) {
                 document.getElementById('allRdvDropdown').style.display = 'none';
             }
+            if (event.target.className === 'modal') { event.target.style.display = 'none'; }
         }
 
         window.onload = init;
