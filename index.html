@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Calendrier</title>
-
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23FFFFFF'/%3E%3Crect width='180' height='45' fill='%23FF3B30'/%3E%3Ccircle cx='45' cy='22' r='6' fill='%23FFFFFF'/%3E%3Ccircle cx='135' cy='22' r='6' fill='%23FFFFFF'/%3E%3Ctext x='90' y='130' font-family='-apple-system, sans-serif' font-size='75' font-weight='900' fill='%231C1C1E' text-anchor='middle'%3E31%3C/text%3E%3C/svg%3E">
-    <link rel="manifest" href="manifest.json">    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23FFFFFF'/%3E%3Crect width='180' height='45' fill='%23FF3B30'/%3E%3Ccircle cx='45' cy='22' r='6' fill='%23FFFFFF'/%3E%3Ccircle cx='135' cy='22' r='6' fill='%23FFFFFF'/%3E%3Ctext x='90' y='130' font-family='-apple-system, sans-serif' font-size='75' font-weight='900' fill='%231C1C1E' text-anchor='middle'%3E31%3C/text%3E%3C/svg%3E">
+    
+    <link rel="manifest" href="manifest.json">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Calendrier">
@@ -305,7 +305,7 @@
 
         .icon-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             background: #f8f8fa;
             padding: 12px;
@@ -506,7 +506,7 @@
         ];
 
         let currentSelectedColor = "#FF3B30";
-        let currentSelectedIcon = "fa-calendar";
+        let currentSelectedIcon = "fa-calendar-days";
         let newCatSelectedHex = "#007AFF";
 
         // PALETTE STANDARD DES MODALES
@@ -516,26 +516,26 @@
             "#4A2C11", "#A0522D", "#D2B48C", "#FFE5E5", "#E5FFE5", "#E5F5FF"
         ];
 
-               // BIBLIOTHÈQUE ENRICHIE ET CORRIGÉE D'ICÔNES
+        // BIBLIOTHÈQUE ENRICHIE ET ENTIÈREMENT CORRIGÉE D'ICÔNES (Avec lunettes et nouveautés)
         const iconLibrary = [
-            { class: "fa-calendar-days", name: "Calendrier / RDV standard" },
+            { class: "fa-calendar-days", name: "Calendrier / RDV" },
             { class: "fa-stethoscope", name: "Médecin / Généraliste" },
             { class: "fa-tooth", name: "Dentiste" },
             { class: "fa-pills", name: "Pharmacie / Traitement" },
-            { class: "fa-glasses", name: "Lunettes / Ophtalmo / Opticien" }, // Corrigé !
+            { class: "fa-glasses", name: "Lunettes / Ophtalmo / Opticien" },
             { class: "fa-scissors", name: "Coiffeur / Esthétique" },
             { class: "fa-briefcase", name: "Travail / Réunion" },
             { class: "fa-house", name: "Maison / Famille" },
-            { class: "fa-wrench", name: "Artisan / Travaux / Réparation" },
+            { class: "fa-wrench", name: "Artisan / Réparation" },
             { class: "fa-phone", name: "Appel / Téléphone" },
             { class: "fa-envelope", name: "Courrier / Administratif" },
             { class: "fa-cart-shopping", name: "Shopping / Courses" },
-            { class: "fa-car", name: "Voiture / Garage / Transport" },
+            { class: "fa-car", name: "Voiture / Garage" },
             { class: "fa-train", name: "Train / Voyage" },
             { class: "fa-plane", name: "Avion / Vacances" },
             { class: "fa-utensils", name: "Restaurant / Repas" },
             { class: "fa-paw", name: "Vétérinaire / Animaux" },
-            { class: "fa-dumbbell", name: "Sport / Kiné / Bien-être" },
+            { class: "fa-dumbbell", name: "Sport / Bien-être" },
             { class: "fa-gift", name: "Anniversaire / Cadeau" },
             { class: "fa-bank", name: "Banque / Factures" }
         ];
@@ -574,21 +574,18 @@
         }
 
         function applyUiSettings() {
-            // Appliquer les variables dynamiques CSS
             document.documentElement.style.setProperty('--bg-default', uiSettings.bgHex);
             document.documentElement.style.setProperty('--text-default', uiSettings.textHex);
             document.documentElement.style.setProperty('--grid-default', uiSettings.gridHex);
             document.documentElement.style.setProperty('--weekend-bg', uiSettings.weekendBgHex);
             document.documentElement.style.setProperty('--holiday-bg', uiSettings.holidayBgHex);
 
-            // Synchroniser les entrées du panneau de contrôle
             document.getElementById('setHexText').value = uiSettings.textHex;
             document.getElementById('setHexGrid').value = uiSettings.gridHex;
             document.getElementById('setHexBg').value = uiSettings.bgHex;
             document.getElementById('setHexWeekend').value = uiSettings.weekendBgHex;
             document.getElementById('setHexHoliday').value = uiSettings.holidayBgHex;
             
-            // Adapter le texte de la barre du haut en fonction de la luminance (Contraste)
             let colorForegroundColor = getAccessibleTextColor(uiSettings.bgHex);
             document.getElementById('mainHeader').style.color = colorForegroundColor;
             document.getElementById('weekdaysHeader').style.color = uiSettings.textHex;
@@ -612,20 +609,18 @@
             });
         }
 
-        // CALCULS DES JOURS FÉRIÉS (Équivalent de l'algorithme SwiftMac)
+        // CALCULS DES JOURS FÉRIÉS
         function isHoliday(date) {
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
             const day = date.getDate();
 
-            // Jours fixes
             if ((month == 1 && day == 1) || (month == 5 && day == 1) || (month == 5 && day == 8) ||
                (month == 7 && day == 14) || (month == 8 && day == 15) || (month == 11 && day == 1) ||
                (month == 11 && day == 11) || (month == 12 && day == 25)) {
                 return true;
             }
 
-            // Calcul de Pâques (Meeus/Jones/Butcher)
             let a = year % 19, b = Math.floor(year / 100), c = year % 100;
             let d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
             let g = Math.floor((b - f + 1) / 3);
@@ -638,7 +633,6 @@
 
             let easterDate = new Date(year, easterMonth - 1, easterDay);
             
-            // Jours mobiles calculés
             let easterMonday = new Date(easterDate); easterMonday.setDate(easterMonday.getDate() + 1);
             let ascension = new Date(easterDate); ascension.setDate(ascension.getDate() + 39);
             let pentecostMonday = new Date(easterDate); pentecostMonday.setDate(pentecostMonday.getDate() + 50);
@@ -665,7 +659,6 @@
             const grid = document.getElementById('daysGrid');
             grid.innerHTML = '';
 
-            // Injection des offsets vides
             for(let i = 0; i < gridOffset; i++) {
                 grid.innerHTML += `<div class="day-cell empty-cell"></div>`;
             }
@@ -676,7 +669,6 @@
                 let classes = ['day-cell'];
                 let inlineStyle = `border-color: var(--grid-default); color: var(--text-default);`;
                 
-                // Vérifications de type de jour
                 if(targetDate.getDay() === 0 || targetDate.getDay() === 6) {
                     inlineStyle += `background-color: var(--weekend-bg);`;
                 } else if(isHoliday(targetDate)) {
@@ -700,13 +692,11 @@
                         let borderStyle = rdv.color.toUpperCase() === '#FFFFFF' ? 'border: 2px solid #000;' : '';
                         rdvHTML += `
                             <div class="rdv-badge" style="background-color: ${rdv.color}; color: ${textBadgeColor}; ${borderStyle}" onclick="event.stopPropagation(); editRdv('${rdv.id}')" title="${String(rdv.hour).padStart(2, '0')}h${String(rdv.minute).padStart(2, '0')} : ${rdv.title}">
-                                <i class="fa-solid ${rdv.icon || 'fa-calendar'}"></i>
+                                <i class="fa-solid ${rdv.icon || 'fa-calendar-days'}"></i>
                             </div>`;
                     });
                     rdvHTML += `</div>`;
                 }
-
-                let inlineStyleDay = (targetDate.getDay() === 0 || targetDate.getDay() === 6) ? `style="background-color: var(--weekend-bg);"` : '';
 
                 grid.innerHTML += `
                     <div class="${classes.join(' ')}" style="${inlineStyle}" onclick="openNewRdv('${dateKey}')">
@@ -720,7 +710,6 @@
             document.getElementById('btnToday').style.opacity = (year === today.getFullYear() && month === today.getMonth()) ? '0.5' : '1';
         }
 
-        // INTERACTION MOIS / ANNÉE
         function navigateMonth(val) { currentDate.setMonth(currentDate.getMonth() + val); renderCalendar(); }
         function changeYear(year) { currentDate.setFullYear(parseInt(year)); renderCalendar(); }
         function goToToday() { currentDate = new Date(); renderCalendar(); }
@@ -736,10 +725,10 @@
             document.getElementById('rdvLocation').value = '';
             document.getElementById('rdvNotes').value = '';
             
-            // Sélection par défaut
-            currentSelectedIcon = "fa-calendar";
+            currentSelectedIcon = "fa-calendar-days";
             document.querySelectorAll('.icon-opt').forEach(el => el.classList.remove('selected'));
-            document.getElementById('ico-fa-calendar').classList.add('selected');
+            let defIco = document.getElementById('ico-fa-calendar-days');
+            if(defIco) defIco.classList.add('selected');
             
             if(customCategories.length > 0) currentSelectedColor = customCategories[0].hex;
             buildRdvCategorySelector();
@@ -756,7 +745,7 @@
                 row.style = "display:flex; align-items:center; justify-content:space-between; padding:8px; background:#fff; border:1px solid #e5e5e5; border-radius:8px; cursor:pointer;";
                 row.onclick = () => {
                     currentSelectedColor = cat.hex;
-                    buildRdvCategorySelector(); // rafraichir les coches
+                    buildRdvCategorySelector();
                 };
 
                 let left = document.createElement('div');
@@ -789,13 +778,11 @@
             document.getElementById('rdvLocation').value = rdv.location || '';
             document.getElementById('rdvNotes').value = rdv.notes || '';
             
-            // Sélection icône enregistrée
-            currentSelectedIcon = rdv.icon || "fa-calendar";
+            currentSelectedIcon = rdv.icon || "fa-calendar-days";
             document.querySelectorAll('.icon-opt').forEach(el => el.classList.remove('selected'));
             let targetIcoNode = document.getElementById(`ico-${currentSelectedIcon}`);
             if(targetIcoNode) targetIcoNode.classList.add('selected');
 
-            // Sélection couleur enregistrée
             currentSelectedColor = rdv.color;
             buildRdvCategorySelector();
 
@@ -838,7 +825,7 @@
             renderCalendar();
         }
 
-        // FENÊTRE CONFIGURATION GÉNERALE (ROUE DENTÉE)
+        // FENÊTRE CONFIGURATION GÉNERALE
         function openSettings() {
             buildSettingsCategoriesList();
             buildNewCatColorPicker();
@@ -927,9 +914,10 @@
             }
         }
 
+        // FERMETURE MODALES
         function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 
-        // GESTION DE LA LISTE GLOBALE déroulante
+        // GESTION DE LA LISTE DROULANTE
         function toggleDropdown() {
             const drop = document.getElementById('allRdvDropdown');
             if(drop.style.display === 'block') { drop.style.display = 'none'; return; }
@@ -947,7 +935,7 @@
                     let d = rdv.dateStr.split('-');
                     let dateFormatted = `${d[2]}/${d[1]}/${d[0]}`;
                     let btn = document.createElement('button');
-                    btn.innerHTML = `<i class="fa-solid ${rdv.icon || 'fa-calendar'}" style="color:${rdv.color}"></i> <b>${dateFormatted} à ${String(rdv.hour).padStart(2,'0')}h${String(rdv.minute).padStart(2,'0')}</b> : ${rdv.title}`;
+                    btn.innerHTML = `<i class="fa-solid ${rdv.icon || 'fa-calendar-days'}" style="color:${rdv.color}"></i> <b>${dateFormatted} à ${String(rdv.hour).padStart(2,'0')}h${String(rdv.minute).padStart(2,'0')}</b> : ${rdv.title}`;
                     btn.onclick = () => { drop.style.display = 'none'; editRdv(rdv.id); };
                     drop.appendChild(btn);
                 });
@@ -966,7 +954,6 @@
             return luma < 120 ? '#ffffff' : '#000000';
         }
 
-        // Clic en dehors pour fermer les menus ou fenêtres
         window.onclick = function(event) {
             if (!event.target.matches('.btn') && !event.target.closest('.dropdown')) {
                 document.getElementById('allRdvDropdown').style.display = 'none';
