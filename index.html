@@ -79,6 +79,11 @@
             color: white;
         }
 
+        .btn-success {
+            background-color: #34C759;
+            color: white;
+        }
+
         .month-title {
             font-size: 22px;
             font-weight: bold;
@@ -447,6 +452,13 @@
                 <div style="width:1px; background:#ccc; margin: 0 10px;"></div>
 
                 <div class="settings-col">
+                    <h3>Sauvegarde & kDrive</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder (kDrive)</button>
+                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer</button>
+                        <input type="file" id="importFileEl" accept=".json" style="display: none;" onchange="importBackup(this)">
+                    </div>
+
                     <h3>Couleurs de l'interface</h3>
                     <div class="form-group">
                         <label>Couleur du texte général</label>
@@ -471,7 +483,7 @@
                         <input type="color" id="setHexHoliday" onchange="saveInterfaceSettings()">
                     </div>
                     
-                    <button class="btn btn-danger" onclick="clearAllData()" style="width:100%; margin-top:30px;"><i class="fa-solid fa-trash"></i> Réinitialiser toute l'App</button>
+                    <button class="btn btn-danger" onclick="clearAllData()" style="width:100%; margin-top:15px;"><i class="fa-solid fa-trash"></i> Réinitialiser toute l'App</button>
                 </div>
             </div>
 
@@ -516,7 +528,7 @@
             "#4A2C11", "#A0522D", "#D2B48C", "#FFE5E5", "#E5FFE5", "#E5F5FF"
         ];
 
-        // BIBLIOTHÈQUE ENRICHIE ET ENTIÈREMENT CORRIGÉE D'ICÔNES (Avec lunettes et nouveautés)
+        // BIBLIOTHÈQUE ENRICHIE D'ICÔNES
         const iconLibrary = [
             { class: "fa-calendar-days", name: "Calendrier / RDV" },
             { class: "fa-stethoscope", name: "Médecin / Généraliste" },
@@ -607,6 +619,59 @@
                 };
                 container.appendChild(div);
             });
+        }
+
+        // FONCTIONNALITÉS DE SAUVEGARDE ET IMPORTATION (kDrive / Local)
+        function exportBackup() {
+            const dataToExport = {
+                appointments: appointments,
+                uiSettings: uiSettings,
+                customCategories: customCategories
+            };
+            const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
+            const downloadAnchor = document.createElement('a');
+            
+            // Format du nom : sauvegarde_calendrier_2026-06-29.json
+            const dateStr = new Date().toISOString().split('T')[0];
+            downloadAnchor.setAttribute("href", jsonString);
+            downloadAnchor.setAttribute("download", `sauvegarde_calendrier_${dateStr}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImport() {
+            document.getElementById('importFileEl').click();
+        }
+
+        function importBackup(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData.appointments) {
+                        appointments = importedData.appointments;
+                        localStorage.setItem('web_appointments', JSON.stringify(appointments));
+                    }
+                    if (importedData.uiSettings) {
+                        uiSettings = importedData.uiSettings;
+                        localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
+                    }
+                    if (importedData.customCategories) {
+                        customCategories = importedData.customCategories;
+                        localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
+                    }
+                    
+                    alert("Sauvegarde importée avec succès ! L'application va se rafraîchir.");
+                    location.reload();
+                } catch (err) {
+                    alert("Erreur : Le fichier de sauvegarde est corrompu ou invalide.");
+                }
+            };
+            reader.readAsText(file);
         }
 
         // CALCULS DES JOURS FÉRIÉS
@@ -825,7 +890,7 @@
             renderCalendar();
         }
 
-        // FENÊTRE CONFIGURATION GÉNERALE
+        // FENÊTRE CONFIGURATION GÉNÉRALE
         function openSettings() {
             buildSettingsCategoriesList();
             buildNewCatColorPicker();
@@ -917,7 +982,7 @@
         // FERMETURE MODALES
         function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 
-        // GESTION DE LA LISTE DROULANTE
+        // GESTION DE LA LISTE DÉROULANTE
         function toggleDropdown() {
             const drop = document.getElementById('allRdvDropdown');
             if(drop.style.display === 'block') { drop.style.display = 'none'; return; }
