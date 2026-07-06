@@ -222,7 +222,7 @@
         .modal-content {
             background-color: white;
             padding: 25px;
-            border-radius: 16px;
+            border-radius: 166px;
             width: 550px;
             max-width: 90%;
             max-height: 85vh;
@@ -621,23 +621,29 @@
             });
         }
 
-        // FONCTIONNALITÉS DE SAUVEGARDE ET IMPORTATION (kDrive / Local)
+        // FONCTIONNALITÉS DE SAUVEGARDE ET IMPORTATION (kDrive / Local) - CORRIGÉ POUR IPAD
         function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
                 customCategories: customCategories
             };
-            const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
-            const downloadAnchor = document.createElement('a');
             
-            // Format du nom : sauvegarde_calendrier_2026-06-29.json
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const downloadAnchor = document.createElement('a');
             const dateStr = new Date().toISOString().split('T')[0];
-            downloadAnchor.setAttribute("href", jsonString);
+            
+            downloadAnchor.setAttribute("href", blobUrl);
             downloadAnchor.setAttribute("download", `sauvegarde_calendrier_${dateStr}.json`);
+            
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
-            downloadAnchor.remove();
+            
+            document.body.removeChild(downloadAnchor);
+            URL.revokeObjectURL(blobUrl);
         }
 
         function triggerImport() {
@@ -1030,4 +1036,3 @@
     </script>
 </body>
 </html>
-
