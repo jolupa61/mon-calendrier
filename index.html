@@ -222,7 +222,7 @@
         .modal-content {
             background-color: white;
             padding: 25px;
-            border-radius: 166px;
+            border-radius: 16px;
             width: 550px;
             max-width: 90%;
             max-height: 85vh;
@@ -431,7 +431,7 @@
 
     <div class="modal" id="settingsModal">
         <div class="modal-content" style="width: 850px;">
-            <h2 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom:10px;">Réglages Généraux</h2>
+            <h2 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom:10px;">Réglages Général</h2>
             
             <div class="settings-layout">
                 <div class="settings-col">
@@ -454,7 +454,7 @@
                 <div class="settings-col">
                     <h3>Sauvegarde & kDrive</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder (kDrive)</button>
+                        <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder</button>
                         <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer</button>
                         <input type="file" id="importFileEl" accept=".json" style="display: none;" onchange="importBackup(this)">
                     </div>
@@ -499,7 +499,6 @@
         let currentDate = new Date();
         let appointments = JSON.parse(localStorage.getItem('web_appointments')) || [];
         
-        // PARAMÈTRES INTERFACE PAR DÉFAUT
         let uiSettings = JSON.parse(localStorage.getItem('web_ui_settings')) || {
             textHex: "#000000",
             gridHex: "#E5E5EA",
@@ -508,7 +507,6 @@
             holidayBgHex: "#E5FFE5"
         };
 
-        // BASE DE COULEURS ET CATÉGORIES PAR DÉFAUT
         let customCategories = JSON.parse(localStorage.getItem('web_custom_categories')) || [
             { id: "1", name: "Travail", hex: "#007AFF" },
             { id: "2", name: "Perso", hex: "#34C759" },
@@ -521,14 +519,12 @@
         let currentSelectedIcon = "fa-calendar-days";
         let newCatSelectedHex = "#007AFF";
 
-        // PALETTE STANDARD DES MODALES
         const colorPalette = [
             "#000000", "#3A3A3C", "#8E8E93", "#AEAEB2", "#E5E5EA", "#FFFFFF",
             "#007AFF", "#34C759", "#FF3B30", "#AF52DE", "#FF9500", "#FFCC00",
             "#4A2C11", "#A0522D", "#D2B48C", "#FFE5E5", "#E5FFE5", "#E5F5FF"
         ];
 
-        // BIBLIOTHÈQUE ENRICHIE D'ICÔNES
         const iconLibrary = [
             { class: "fa-calendar-days", name: "Calendrier / RDV" },
             { class: "fa-stethoscope", name: "Médecin / Généraliste" },
@@ -552,7 +548,6 @@
             { class: "fa-bank", name: "Banque / Factures" }
         ];
 
-        // INITIALISATION DES COMPOSANTS
         function init() {
             setupYearSelect();
             setupTimeSelects();
@@ -621,136 +616,64 @@
             });
         }
 
-                // ================= CONFIGURATION KDRIVE =================
-        const KDRIVE_TOKEN = "JYYvKPf7693ooSaa"; 
-        const KDRIVE_ID = "3149405"; 
-        // ========================================================
-
-        async function exportBackup() {
+        // FONCTION DE TÉLÉCHARGEMENT DIRECT ET PROPRE POUR IPAD / MAC
+        function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
                 customCategories: customCategories
             };
-
-            const btn = document.querySelector('.btn-success');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sauvegarde...';
-            btn.disabled = true;
-
-            try {
-                // 1. Recherche du fichier existant
-                let fileId = null;
-                const searchUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/search?query=sauvegarde_calendrier.json`;
-                const searchRes = await fetch(searchUrl, {
-                    method: "GET",
-                    headers: { 
-                        "Authorization": `Bearer ${KDRIVE_TOKEN}`,
-                        "Accept": "application/json"
-                    }
-                });
-                
-                if (!searchRes.ok) throw new Error(`Erreur d'authentification ou ID kDrive incorrect (Code: ${searchRes.status})`);
-                
-                const searchData = await searchRes.json();
-                if (searchData.status === "success" && searchData.data.length > 0) {
-                    fileId = searchData.data[0].id;
-                }
-
-                // 2. Préparation de l'envoi
-                let uploadUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/upload`;
-                let method = "POST";
-
-                if (fileId) {
-                    uploadUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/${fileId}/upload`;
-                    method = "PUT"; // On écrase
-                }
-
-                const formData = new FormData();
-                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
-                formData.append("file", blob, "sauvegarde_calendrier.json");
-                if (!fileId) {
-                    formData.append("path", "/"); 
-                }
-
-                const uploadRes = await fetch(uploadUrl, {
-                    method: method,
-                    headers: { "Authorization": `Bearer ${KDRIVE_TOKEN}` },
-                    body: formData
-                });
-
-                const uploadData = await uploadRes.json();
-
-                if (uploadData.status === "success") {
-                    alert("Sauvegarde réussie et écrasée sur kDrive !");
-                } else {
-                    throw new Error(uploadData.error?.description || "Refus d'écriture Infomaniak");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Échec : " + error.message + "\n\nVérifiez que votre Jeton a bien les droits 'Écriture' sur kDrive.");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+            
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const downloadAnchor = document.createElement('a');
+            
+            // Nom de fichier fixe pour donner l'option "Remplacer" au système (kDrive/Fichiers)
+            downloadAnchor.setAttribute("href", blobUrl);
+            downloadAnchor.setAttribute("download", "sauvegarde_calendrier.json");
+            
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            
+            document.body.removeChild(downloadAnchor);
+            URL.revokeObjectURL(blobUrl);
         }
 
-        async function triggerImport() {
-            const btn = document.querySelector('button[onclick="triggerImport()"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Chargement...';
-            btn.disabled = true;
+        function triggerImport() {
+            document.getElementById('importFileEl').click();
+        }
 
-            try {
-                const searchUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/search?query=sauvegarde_calendrier.json`;
-                const searchRes = await fetch(searchUrl, {
-                    method: "GET",
-                    headers: { 
-                        "Authorization": `Bearer ${KDRIVE_TOKEN}`,
-                        "Accept": "application/json"
+        function importBackup(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData.appointments) {
+                        appointments = importedData.appointments;
+                        localStorage.setItem('web_appointments', JSON.stringify(appointments));
                     }
-                });
-
-                if (!searchRes.ok) throw new Error(`Erreur d'authentification (Code: ${searchRes.status})`);
-
-                const searchData = await searchRes.json();
-
-                if (searchData.status === "success" && searchData.data.length > 0) {
-                    const fileId = searchData.data[0].id;
+                    if (importedData.uiSettings) {
+                        uiSettings = importedData.uiSettings;
+                        localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
+                    }
+                    if (importedData.customCategories) {
+                        customCategories = importedData.customCategories;
+                        localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
+                    }
                     
-                    const downloadUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/${fileId}/download`;
-                    const downloadRes = await fetch(downloadUrl, {
-                        headers: { "Authorization": `Bearer ${KDRIVE_TOKEN}` }
-                    });
-                    
-                    const importedData = await downloadRes.json();
-                    
-                    if (importedData.appointments) appointments = importedData.appointments;
-                    if (importedData.uiSettings) uiSettings = importedData.uiSettings;
-                    if (importedData.customCategories) customCategories = importedData.customCategories;
-                    
-                    localStorage.setItem('web_appointments', JSON.stringify(appointments));
-                    localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
-                    localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
-                    
-                    alert("Données kDrive importées avec succès !");
+                    alert("Sauvegarde importée avec succès ! L'application va se rafraîchir.");
                     location.reload();
-                } else {
-                    alert("Aucun fichier 'sauvegarde_calendrier.json' trouvé à la racine de votre kDrive. Faites d'abord une sauvegarde.");
+                } catch (err) {
+                    alert("Erreur : Le fichier de sauvegarde est corrompu ou invalide.");
                 }
-            } catch (error) {
-                console.error(error);
-                alert("Erreur d'importation : " + error.message);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+            };
+            reader.readAsText(file);
         }
-
-        function importBackup(input) {}
-
-        // Cette fonction n'est plus utile car on passe par l'API, on la laisse vide pour éviter les bugs si elle est appelée ailleurs
-        function importBackup(input) {}
 
         // CALCULS DES JOURS FÉRIÉS
         function isHoliday(date) {
@@ -787,7 +710,6 @@
             return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
         }
 
-        // DESSIN DU CALENDRIER
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
@@ -857,7 +779,6 @@
         function changeYear(year) { currentDate.setFullYear(parseInt(year)); renderCalendar(); }
         function goToToday() { currentDate = new Date(); renderCalendar(); }
 
-        // EXÉCUTION DU FORMULAIRE RDV
         function openNewRdv(dateKey) {
             document.getElementById('modalTitle').innerText = "Nouveau RDV";
             document.getElementById('rdvId').value = '';
@@ -968,7 +889,6 @@
             renderCalendar();
         }
 
-        // FENÊTRE CONFIGURATION GÉNÉRALE
         function openSettings() {
             buildSettingsCategoriesList();
             buildNewCatColorPicker();
@@ -1057,10 +977,8 @@
             }
         }
 
-        // FERMETURE MODALES
         function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 
-        // GESTION DE LA LISTE DÉROULANTE
         function toggleDropdown() {
             const drop = document.getElementById('allRdvDropdown');
             if(drop.style.display === 'block') { drop.style.display = 'none'; return; }
@@ -1086,7 +1004,6 @@
             drop.style.display = 'block';
         }
 
-        // LUMINANCE / LISIBILITÉ DU TEXTE
         function getAccessibleTextColor(hex) {
             let c = hex.substring(1);
             let rgb = parseInt(c, 16);
