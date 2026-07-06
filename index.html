@@ -621,17 +621,11 @@
             });
         }
 
-        // FONCTIONNALITÉS DE SAUVEGARDE ET IMPORTATION (kDrive / Local) - CORRIGÉ POUR IPAD
-                        // ================= CONFIGURATION KDRIVE =================
-        // Remplace par ton vrai jeton Infomaniak
+                // ================= CONFIGURATION KDRIVE =================
         const KDRIVE_TOKEN = "JYYvKPf7693ooSaa"; 
-        // Remplace par l'ID de ton kDrive (tu le trouveras dans l'URL quand tu es sur kDrive sur le web, ex: 123456)
         const KDRIVE_ID = "3149405"; 
-        // Le nom du fichier qui sera TOUJOURS le même sur ton cloud
-        const KDRIVE_FILE_PATH = "/sauvegarde_calendrier.json"; 
         // ========================================================
 
-        // SAUVEGARDE DIRECTE SUR KDRIVE (ÉCRASE LE PRÉCÉDENT)
         async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -645,32 +639,38 @@
             btn.disabled = true;
 
             try {
-                // 1. On cherche si le fichier existe déjà pour avoir son ID (nécessaire pour écraser)
+                // 1. Recherche du fichier existant
                 let fileId = null;
                 const searchUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/search?query=sauvegarde_calendrier.json`;
                 const searchRes = await fetch(searchUrl, {
-                    headers: { "Authorization": `Bearer ${KDRIVE_TOKEN}` }
+                    method: "GET",
+                    headers: { 
+                        "Authorization": `Bearer ${KDRIVE_TOKEN}`,
+                        "Accept": "application/json"
+                    }
                 });
-                const searchData = await searchRes.json();
                 
+                if (!searchRes.ok) throw new Error(`Erreur d'authentification ou ID kDrive incorrect (Code: ${searchRes.status})`);
+                
+                const searchData = await searchRes.json();
                 if (searchData.status === "success" && searchData.data.length > 0) {
                     fileId = searchData.data[0].id;
                 }
 
+                // 2. Préparation de l'envoi
                 let uploadUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/upload`;
                 let method = "POST";
 
-                // Si le fichier existe, on passe en mode "mise à jour" (update) pour l'écraser
                 if (fileId) {
                     uploadUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/${fileId}/upload`;
-                    method = "PUT";
+                    method = "PUT"; // On écrase
                 }
 
                 const formData = new FormData();
                 const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
                 formData.append("file", blob, "sauvegarde_calendrier.json");
                 if (!fileId) {
-                    formData.append("path", "/"); // Destination à la racine du kDrive si premier upload
+                    formData.append("path", "/"); 
                 }
 
                 const uploadRes = await fetch(uploadUrl, {
@@ -684,18 +684,17 @@
                 if (uploadData.status === "success") {
                     alert("Sauvegarde réussie et écrasée sur kDrive !");
                 } else {
-                    throw new Error(uploadData.error?.description || "Erreur inconnue");
+                    throw new Error(uploadData.error?.description || "Refus d'écriture Infomaniak");
                 }
             } catch (error) {
                 console.error(error);
-                alert("Échec de la sauvegarde directe : " + error.message);
+                alert("Échec : " + error.message + "\n\nVérifiez que votre Jeton a bien les droits 'Écriture' sur kDrive.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
 
-        // IMPORTATION DIRECTE DEPUIS KDRIVE
         async function triggerImport() {
             const btn = document.querySelector('button[onclick="triggerImport()"]');
             const originalText = btn.innerHTML;
@@ -703,17 +702,22 @@
             btn.disabled = true;
 
             try {
-                // On cherche le fichier sur le kDrive
                 const searchUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/search?query=sauvegarde_calendrier.json`;
                 const searchRes = await fetch(searchUrl, {
-                    headers: { "Authorization": `Bearer ${KDRIVE_TOKEN}` }
+                    method: "GET",
+                    headers: { 
+                        "Authorization": `Bearer ${KDRIVE_TOKEN}`,
+                        "Accept": "application/json"
+                    }
                 });
+
+                if (!searchRes.ok) throw new Error(`Erreur d'authentification (Code: ${searchRes.status})`);
+
                 const searchData = await searchRes.json();
 
                 if (searchData.status === "success" && searchData.data.length > 0) {
                     const fileId = searchData.data[0].id;
                     
-                    // On télécharge le contenu du fichier
                     const downloadUrl = `https://api.infomaniak.com/2/kdrives/${KDRIVE_ID}/files/${fileId}/download`;
                     const downloadRes = await fetch(downloadUrl, {
                         headers: { "Authorization": `Bearer ${KDRIVE_TOKEN}` }
@@ -721,32 +725,29 @@
                     
                     const importedData = await downloadRes.json();
                     
-                    if (importedData.appointments) {
-                        appointments = importedData.appointments;
-                        localStorage.setItem('web_appointments', JSON.stringify(appointments));
-                    }
-                    if (importedData.uiSettings) {
-                        uiSettings = importedData.uiSettings;
-                        localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
-                    }
-                    if (importedData.customCategories) {
-                        customCategories = importedData.customCategories;
-                        localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
-                    }
+                    if (importedData.appointments) appointments = importedData.appointments;
+                    if (importedData.uiSettings) uiSettings = importedData.uiSettings;
+                    if (importedData.customCategories) customCategories = importedData.customCategories;
+                    
+                    localStorage.setItem('web_appointments', JSON.stringify(appointments));
+                    localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
+                    localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
                     
                     alert("Données kDrive importées avec succès !");
                     location.reload();
                 } else {
-                    alert("Aucun fichier 'sauvegarde_calendrier.json' trouvé à la racine de votre kDrive.");
+                    alert("Aucun fichier 'sauvegarde_calendrier.json' trouvé à la racine de votre kDrive. Faites d'abord une sauvegarde.");
                 }
             } catch (error) {
                 console.error(error);
-                alert("Erreur lors de l'importation : " + error.message);
+                alert("Erreur d'importation : " + error.message);
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
+
+        function importBackup(input) {}
 
         // Cette fonction n'est plus utile car on passe par l'API, on la laisse vide pour éviter les bugs si elle est appelée ailleurs
         function importBackup(input) {}
