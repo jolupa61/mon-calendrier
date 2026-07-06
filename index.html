@@ -622,7 +622,7 @@
         }
 
         // FONCTIONNALITÉS DE SAUVEGARDE ET IMPORTATION (kDrive / Local) - CORRIGÉ POUR IPAD
-        function exportBackup() {
+                function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
@@ -634,10 +634,10 @@
             const blobUrl = URL.createObjectURL(blob);
             
             const downloadAnchor = document.createElement('a');
-            const dateStr = new Date().toISOString().split('T')[0];
             
+            // Nom fixe sans la date pour déclencher l'option "Remplacer" du système
             downloadAnchor.setAttribute("href", blobUrl);
-            downloadAnchor.setAttribute("download", `sauvegarde_calendrier_${dateStr}.json`);
+            downloadAnchor.setAttribute("download", "sauvegarde_calendrier.json");
             
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
