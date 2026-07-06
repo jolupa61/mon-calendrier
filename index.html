@@ -616,7 +616,6 @@
             });
         }
 
-        // FONCTION DE TÉLÉCHARGEMENT DIRECT ET PROPRE POUR IPAD / MAC
         function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -629,8 +628,6 @@
             const blobUrl = URL.createObjectURL(blob);
             
             const downloadAnchor = document.createElement('a');
-            
-            // Nom de fichier fixe pour donner l'option "Remplacer" au système (kDrive/Fichiers)
             downloadAnchor.setAttribute("href", blobUrl);
             downloadAnchor.setAttribute("download", "sauvegarde_calendrier.json");
             
@@ -675,7 +672,6 @@
             reader.readAsText(file);
         }
 
-        // CALCULS DES JOURS FÉRIÉS
         function isHoliday(date) {
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
