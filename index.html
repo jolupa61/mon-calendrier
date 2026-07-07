@@ -452,10 +452,10 @@
                 <div style="width:1px; background:#ccc; margin: 0 10px;"></div>
 
                 <div class="settings-col">
-                    <h3>Sauvegarde & kDrive</h3>
+                    <h3>Sauvegarde iCloud</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder</button>
-                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer</button>
+                        <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder (iCloud)</button>
+                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer (iCloud)</button>
                         <input type="file" id="importFileEl" accept=".json" style="display: none;" onchange="importBackup(this)">
                     </div>
 
@@ -616,6 +616,7 @@
             });
         }
 
+        // SAUVEGARDE FORCEE POUR LES FICHIERS DE L'IPAD
         function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -624,7 +625,9 @@
             };
             
             const jsonString = JSON.stringify(dataToExport, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
+            
+            // "application/octet-stream" court-circuite Organic Maps et force le téléchargement
+            const blob = new Blob([jsonString], { type: "application/octet-stream" });
             const blobUrl = URL.createObjectURL(blob);
             
             const downloadAnchor = document.createElement('a');
