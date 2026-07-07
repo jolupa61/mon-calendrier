@@ -616,8 +616,8 @@
             });
         }
 
-        // SAUVEGARDE FORCEE POUR LES FICHIERS DE L'IPAD
-        function exportBackup() {
+        // UTILISATION DU MENU DE PARTAGE NATIF APPLE POUR iCLOUD
+        async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
@@ -625,18 +625,30 @@
             };
             
             const jsonString = JSON.stringify(dataToExport, null, 2);
-            
-            // "application/octet-stream" court-circuite Organic Maps et force le téléchargement
+            const fileName = "sauvegarde_calendrier.json";
+
+            if (navigator.canShare && navigator.share) {
+                try {
+                    const file = new File([jsonString], fileName, { type: "application/json" });
+                    await navigator.share({
+                        files: [file],
+                        title: 'Sauvegarde Calendrier',
+                        text: 'Fichier de sauvegarde de mon calendrier'
+                    });
+                    return; 
+                } catch (err) {
+                    if (err.name === 'AbortError') return;
+                }
+            }
+
+            // Solution de secours (Téléchargement de secours)
             const blob = new Blob([jsonString], { type: "application/octet-stream" });
             const blobUrl = URL.createObjectURL(blob);
-            
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", blobUrl);
-            downloadAnchor.setAttribute("download", "sauvegarde_calendrier.json");
-            
+            downloadAnchor.setAttribute("download", fileName);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
-            
             document.body.removeChild(downloadAnchor);
             URL.revokeObjectURL(blobUrl);
         }
