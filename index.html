@@ -456,8 +456,7 @@
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder (iCloud)</button>
                         <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer (iCloud)</button>
-                        <!-- CORRECTION DU BOUTON ICI POUR NE PLUS GRISER LES FICHIERS -->
-                        <input type="file" id="importFileEl" accept=".json,.txt,text/plain" style="display: none;" onchange="importBackup(this)">
+                        <input type="file" id="importFileEl" accept=".json,.txt,*/*" style="display: none;" onchange="importBackup(this)">
                     </div>
 
                     <h3>Couleurs de l'interface</h3>
@@ -617,7 +616,7 @@
             });
         }
 
-        // TEXTE BRUT FORCE LE COMPORTEMENT DE L'APPLICATION "FICHIERS" SUR iOS
+        // SOLUTION ULTIME : TYPE APPLICATION/JSON RECONNU MAIS FORCE EN TANT QUE FICHIER SECURISE VIA SHARE
         async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -625,12 +624,16 @@
                 customCategories: customCategories
             };
             
-            const jsonString = JSON.stringify(dataToExport, null, 2);
-            const fileName = "sauvegarde_calendrier.txt";
+            // Forcer l'écriture propre sans caractères spéciaux Apple
+            const jsonString = JSON.stringify(dataToExport);
+            const fileName = "sauvegarde_calendrier.json";
 
             if (navigator.canShare && navigator.share) {
                 try {
-                    const file = new File([jsonString], fileName, { type: "text/plain" });
+                    // On envoie un vrai JSON sous forme de binaire brut pour empêcher iOS de le modifier
+                    const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+                    const file = new File([blob], fileName, { type: "application/json" });
+                    
                     await navigator.share({
                         files: [file],
                         title: 'Sauvegarde Calendrier'
@@ -641,7 +644,7 @@
                 }
             }
 
-            const blob = new Blob([jsonString], { type: "text/plain" });
+            const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
             const blobUrl = URL.createObjectURL(blob);
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", blobUrl);
@@ -663,7 +666,12 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
+                    let content = e.target.result;
+                    
+                    // Nettoyage de sécurité au cas où l'iPad aurait collé des guillemets Apple ou espaces bizarres
+                    content = content.replace(/[\u201c\u201d\u201e\u201f\u00ab\u00bb]/g, '"'); 
+                    
+                    const importedData = JSON.parse(content);
                     if (importedData.appointments) {
                         appointments = importedData.appointments;
                         localStorage.setItem('web_appointments', JSON.stringify(appointments));
