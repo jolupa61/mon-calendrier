@@ -223,7 +223,7 @@
             background-color: white;
             padding: 25px;
             border-radius: 16px;
-            width: 550px;
+            width: 850px;
             max-width: 90%;
             max-height: 85vh;
             overflow-y: auto;
@@ -348,6 +348,28 @@
             padding: 6px;
             font-size: 14px;
         }
+
+        /* BLOC DE TÉLÉCHARGEMENT INTÉGRÉ */
+        .apple-download-box {
+            background: #eef7ff;
+            border: 2px dashed #007AFF;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        .apple-download-box a {
+            display: inline-block;
+            background: #007AFF;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -381,7 +403,7 @@
     </div>
 
     <div class="modal" id="rdvModal">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 550px;">
             <h2 id="modalTitle" style="margin-top:0;">Nouveau RDV</h2>
             <input type="hidden" id="rdvId">
             <input type="hidden" id="rdvDateStr">
@@ -430,7 +452,7 @@
     </div>
 
     <div class="modal" id="settingsModal">
-        <div class="modal-content" style="width: 850px;">
+        <div class="modal-content">
             <h2 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom:10px;">Réglages Général</h2>
             
             <div class="settings-layout">
@@ -453,14 +475,18 @@
 
                 <div class="settings-col">
                     <h3>Sauvegarde iCloud</h3>
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder (iCloud)</button>
-                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer (iCloud)</button>
-                        <!-- LE BOUTON ACCEPTE TOUT SANS AUCUN BLOCAGE GRISÉ -->
-                        <input type="file" id="importFileEl" accept=".json,.txt,text/plain,*/*" style="display: none;" onchange="importBackup(this)">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn btn-success" onclick="prepareBackupFile()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> 1. Préparer Fichier</button>
+                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Fichier</button>
+                        <input type="file" id="importFileEl" accept=".json,.txt" style="display: none;" onchange="importBackup(this)">
                     </div>
 
-                    <h3>Couleurs de l'interface</h3>
+                    <div class="apple-download-box" id="appleDownloadBox">
+                        <p style="margin:0; font-size:13px; color:#333;"><b>RESTE APPUYÉ (Appui long)</b> sur le bouton bleu :</p>
+                        <a id="appleDownloadLink" href="#" download="sauvegarde_calendrier.json">📥 Enregistrer sous...</a>
+                    </div>
+
+                    <h3 style="margin-top:20px;">Couleurs de l'interface</h3>
                     <div class="form-group">
                         <label>Couleur du texte général</label>
                         <input type="color" id="setHexText" onchange="saveInterfaceSettings()">
@@ -617,71 +643,61 @@
             });
         }
 
-        // METHODE APPAREIL APPLE : EXPORT DIRECT VIA APPUI LONG
-function exportBackup() {
-    const dataToExport = {
-        appointments: appointments,
-        uiSettings: uiSettings,
-        customCategories: customCategories
-    };
-    
-    const jsonString = JSON.stringify(dataToExport, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const blobUrl = URL.createObjectURL(blob);
-    
-    // Supprime l'ancienne zone de téléchargement si elle existe déjà
-    const oldZone = document.getElementById('safari-download-zone');
-    if (oldZone) oldZone.remove();
-
-    // Crée une petite zone visuelle propre en haut de l'écran
-    const zone = document.createElement('div');
-    zone.id = 'safari-download-zone';
-    zone.style = "position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #007AFF; color: white; padding: 15px 20px; border-radius: 12px; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; font-family: inherit;";
-    
-    zone.innerHTML = `
-        <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 14px;">Fais un <b>APPUI LONG</b> sur le bouton ci-dessous :</p>
-        <a href="${blobUrl}" download="sauvegarde_calendrier.json" style="display: inline-block; background: white; color: #007AFF; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            📥 Télécharger la sauvegarde
-        </a>
-        <button onclick="document.getElementById('safari-download-zone').remove()" style="display: block; margin: 10px auto 0 auto; background: transparent; border: none; color: white; opacity: 0.7; cursor: pointer; font-size: 12px; text-decoration: underline;">Fermer</button>
-    `;
-    
-    document.body.appendChild(zone);
-}
+        // GENERATION DU LIEN DIRECT DANS LA BOITE SANS PARTAGE APPLE
+        function prepareBackupFile() {
+            const dataToExport = {
+                appointments: appointments,
+                uiSettings: uiSettings,
+                customCategories: customCategories
+            };
+            
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const linkEl = document.getElementById('appleDownloadLink');
+            linkEl.href = blobUrl;
+            
+            // On affiche la zone intégrée sous les boutons
+            document.getElementById('appleDownloadBox').style.display = 'block';
+        }
 
         function triggerImport() {
             document.getElementById('importFileEl').click();
         }
 
-        // FORCE LE MENU DE PARTAGE IPAD AVEC UN UNIQUE FICHIER JSON
-async function exportBackup() {
-    const dataToExport = {
-        appointments: appointments,
-        uiSettings: uiSettings,
-        customCategories: customCategories
-    };
-    
-    const jsonString = JSON.stringify(dataToExport, null, 2);
-    const fileName = "sauvegarde_calendrier.json";
+        function importBackup(input) {
+            const file = input.files[0];
+            if (!file) return;
 
-    if (navigator.canShare && navigator.share) {
-        try {
-            // L'astuce est ici : "octet-stream" empêche Safari de générer le double fichier .txt
-            const blob = new Blob([jsonString], { type: "application/octet-stream" });
-            const file = new File([blob], fileName, { type: "application/octet-stream" });
-            
-            await navigator.share({
-                files: [file],
-                title: 'Sauvegarde'
-            });
-        } catch (err) {
-            if (err.name === 'AbortError') return;
-            alert("Erreur : " + err.message);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let content = e.target.result;
+                    content = content.replace(/[\u201c\u201d\u201e\u201f\u00ab\u00bb]/g, '"'); 
+                    const importedData = JSON.parse(content);
+                    
+                    if (importedData.appointments) {
+                        appointments = importedData.appointments;
+                        localStorage.setItem('web_appointments', JSON.stringify(appointments));
+                    }
+                    if (importedData.uiSettings) {
+                        uiSettings = importedData.uiSettings;
+                        localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
+                    }
+                    if (importedData.customCategories) {
+                        customCategories = importedData.customCategories;
+                        localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
+                    }
+                    
+                    alert("Sauvegarde importée avec succès !");
+                    location.reload();
+                } catch (err) {
+                    alert("Erreur : Fichier invalide.");
+                }
+            };
+            reader.readAsText(file);
         }
-    } else {
-        alert("Le partage n'est pas supporté sur ce navigateur.");
-    }
-}
 
         function isHoliday(date) {
             const year = date.getFullYear();
@@ -897,6 +913,8 @@ async function exportBackup() {
         }
 
         function openSettings() {
+            // On cache la zone de téléchargement à chaque ouverture
+            document.getElementById('appleDownloadBox').style.display = 'none';
             buildSettingsCategoriesList();
             buildNewCatColorPicker();
             document.getElementById('settingsModal').style.display = 'flex';
@@ -978,7 +996,7 @@ async function exportBackup() {
         }
 
         function clearAllData() {
-            if(confirm("Attention : cela va détruire la totalité de vos données et réglages. Continuer ?")) {
+            if(confirm("Attention : détruire les données ?")) {
                 localStorage.clear();
                 location.reload();
             }
@@ -1025,7 +1043,6 @@ async function exportBackup() {
             if (!event.target.matches('.btn') && !event.target.closest('.dropdown')) {
                 document.getElementById('allRdvDropdown').style.display = 'none';
             }
-            if (event.target.className === 'modal') { event.target.style.display = 'none'; }
         }
 
         window.onload = init;
