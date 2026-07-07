@@ -348,28 +348,6 @@
             padding: 6px;
             font-size: 14px;
         }
-
-        /* BLOC DE TÉLÉCHARGEMENT INTÉGRÉ */
-        .apple-download-box {
-            background: #eef7ff;
-            border: 2px dashed #007AFF;
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-            margin-top: 10px;
-            display: none;
-        }
-        .apple-download-box a {
-            display: inline-block;
-            background: #007AFF;
-            color: white;
-            padding: 8px 14px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            margin-top: 5px;
-        }
     </style>
 </head>
 <body>
@@ -474,16 +452,12 @@
                 <div style="width:1px; background:#ccc; margin: 0 10px;"></div>
 
                 <div class="settings-col">
-                    <h3>Sauvegarde iCloud</h3>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <button class="btn btn-success" onclick="prepareBackupFile()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> 1. Préparer Fichier</button>
-                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Fichier</button>
+                    <h3>Sauvegarde (Zéro Fichier)</h3>
+                    <p style="font-size:12px; color:#666; margin-bottom:10px;">Cliquez sur le bouton vert, puis allez coller votre sauvegarde dans l'application <b>Notes</b> de votre iPad.</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-success" onclick="copyBackupToClipboard()" style="flex: 1;"><i class="fa-solid fa-copy"></i> 1. Copier la Sauvegarde</button>
+                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-paste"></i> 2. Importer</button>
                         <input type="file" id="importFileEl" accept=".json,.txt" style="display: none;" onchange="importBackup(this)">
-                    </div>
-
-                    <div class="apple-download-box" id="appleDownloadBox">
-                        <p style="margin:0; font-size:13px; color:#333;"><b>RESTE APPUYÉ (Appui long)</b> sur le bouton bleu :</p>
-                        <a id="appleDownloadLink" href="#" download="sauvegarde_calendrier.json">📥 Enregistrer sous...</a>
                     </div>
 
                     <h3 style="margin-top:20px;">Couleurs de l'interface</h3>
@@ -643,23 +617,22 @@
             });
         }
 
-        // GENERATION DU LIEN DIRECT DANS LA BOITE SANS PARTAGE APPLE
-        function prepareBackupFile() {
+        // COPIE EN UN CLIC DANS LE PRESSE-PAPIER DE L'IPAD
+        function copyBackupToClipboard() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
                 customCategories: customCategories
             };
             
-            const jsonString = JSON.stringify(dataToExport, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const blobUrl = URL.createObjectURL(blob);
-            
-            const linkEl = document.getElementById('appleDownloadLink');
-            linkEl.href = blobUrl;
-            
-            // On affiche la zone intégrée sous les boutons
-            document.getElementById('appleDownloadBox').style.display = 'block';
+            const jsonString = JSON.stringify(dataToExport);
+
+            // Méthode moderne et rapide pour copier du texte directement
+            navigator.clipboard.writeText(jsonString).then(() => {
+                alert("Sauvegarde copiée ! Ouvrez l'application Notes de votre iPad, créez une note, restez appuyé et faites 'Coller'. Vous aurez ainsi votre sauvegarde sous la main.");
+            }).catch(err => {
+                alert("Impossible de copier automatiquement.");
+            });
         }
 
         function triggerImport() {
@@ -693,7 +666,7 @@
                     alert("Sauvegarde importée avec succès !");
                     location.reload();
                 } catch (err) {
-                    alert("Erreur : Fichier invalide.");
+                    alert("Erreur : Fichier ou format invalide.");
                 }
             };
             reader.readAsText(file);
@@ -913,8 +886,6 @@
         }
 
         function openSettings() {
-            // On cache la zone de téléchargement à chaque ouverture
-            document.getElementById('appleDownloadBox').style.display = 'none';
             buildSettingsCategoriesList();
             buildNewCatColorPicker();
             document.getElementById('settingsModal').style.display = 'flex';
