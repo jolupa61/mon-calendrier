@@ -617,40 +617,33 @@
             });
         }
 
-        // EXPORT PARFAIT EN TXT POUR FAIRE PLAISIR À SAFARI IPAD
-        async function exportBackup() {
-            const dataToExport = {
-                appointments: appointments,
-                uiSettings: uiSettings,
-                customCategories: customCategories
-            };
-            
-            const jsonString = JSON.stringify(dataToExport);
-            const fileName = "sauvegarde_calendrier.txt"; // Fichier texte pur accepté partout
+        // EXPORT COMPATIBLE IPAD SANS DOUBLON TEXTE
+function exportBackup() {
+    const dataToExport = {
+        appointments: appointments,
+        uiSettings: uiSettings,
+        customCategories: customCategories
+    };
+    
+    const jsonString = JSON.stringify(dataToExport);
+    const fileName = "sauvegarde_calendrier.json";
 
-            if (navigator.canShare && navigator.share) {
-                try {
-                    const file = new File([jsonString], fileName, { type: "text/plain;charset=utf-8" });
-                    await navigator.share({
-                        files: [file],
-                        title: 'Sauvegarde Calendrier'
-                    });
-                    return; 
-                } catch (err) {
-                    if (err.name === 'AbortError') return;
-                }
-            }
-
-            const blob = new Blob([jsonString], { type: "text/plain;charset=utf-8" });
-            const blobUrl = URL.createObjectURL(blob);
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", blobUrl);
-            downloadAnchor.setAttribute("download", fileName);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            document.body.removeChild(downloadAnchor);
-            URL.revokeObjectURL(blobUrl);
-        }
+    // On crée un lien invisible pour forcer le téléchargement direct
+    const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+    const blobUrl = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement('a');
+    
+    downloadAnchor.setAttribute("href", blobUrl);
+    downloadAnchor.setAttribute("download", fileName);
+    
+    // On simule le clic
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    
+    // Nettoyage de la mémoire
+    document.body.removeChild(downloadAnchor);
+    URL.revokeObjectURL(blobUrl);
+}
 
         function triggerImport() {
             document.getElementById('importFileEl').click();
