@@ -618,28 +618,36 @@
 
         // SOLUTION ULTIME : TYPE APPLICATION/JSON RECONNU MAIS FORCE EN TANT QUE FICHIER SECURISE VIA SHARE
                       // LA MÉTHODE FINALE POUR CONTOURNER LE BLOCAGE SAFARI IPAD
-        function exportBackup() {
+                // MÉTHODE EXCLUSIVE IPAD : PASSE UNIQUEMENT PAR LE MENU DE PARTAGE NATIF
+        async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
                 customCategories: customCategories
             };
             
-            const jsonString = JSON.stringify(dataToExport);
+            const jsonString = JSON.stringify(dataToExport, null, 2);
             const fileName = "sauvegarde_calendrier.json";
 
-            // Encodage en Base64 pour forcer Safari à le voir comme un flux de données propre
-            const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
-            const dataUrl = "data:application/json;charset=utf-8;base64," + base64Data;
-
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataUrl);
-            downloadAnchor.setAttribute("download", fileName);
-            
-            // Astuce spécifique iOS/Safari : on simule un clic forcé dans le document
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            document.body.removeChild(downloadAnchor);
+            if (navigator.canShare && navigator.share) {
+                try {
+                    // On crée un fichier binaire brut pour que Safari ne cherche pas à l'analyser
+                    const blob = new Blob([jsonString], { type: "application/octet-stream" });
+                    const file = new File([blob], fileName, { type: "application/octet-stream" });
+                    
+                    // On ouvre le menu natif de l'iPad
+                    await navigator.share({
+                        files: [file],
+                        title: 'Sauvegarde Calendrier'
+                    });
+                } catch (err) {
+                    // Gestion de l'annulation par l'utilisateur
+                    if (err.name === 'AbortError') return;
+                    alert("Erreur lors du partage : " + err.message);
+                }
+            } else {
+                alert("Le système de partage n'est pas supporté par votre navigateur. Essayez d'ajouter l'application à l'écran d'accueil.");
+            }
         }
 
         function triggerImport() {
