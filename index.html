@@ -617,6 +617,7 @@
         }
 
         // SOLUTION ULTIME : TYPE APPLICATION/JSON RECONNU MAIS FORCE EN TANT QUE FICHIER SECURISE VIA SHARE
+                // VERSION CORRIGÉE : 100% JSON ET PLUS AUCUN DOUBLON TXT
         async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -624,27 +625,28 @@
                 customCategories: customCategories
             };
             
-            // Forcer l'écriture propre sans caractères spéciaux Apple
-            const jsonString = JSON.stringify(dataToExport);
+            const jsonString = JSON.stringify(dataToExport, null, 2);
             const fileName = "sauvegarde_calendrier.json";
 
+            // 1. On tente le partage natif Apple (iCloud / Fichiers) en format JSON propre
             if (navigator.canShare && navigator.share) {
                 try {
-                    // On envoie un vrai JSON sous forme de binaire brut pour empêcher iOS de le modifier
-                    const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+                    const blob = new Blob([jsonString], { type: "application/json" });
                     const file = new File([blob], fileName, { type: "application/json" });
                     
                     await navigator.share({
                         files: [file],
                         title: 'Sauvegarde Calendrier'
                     });
-                    return; 
+                    return; // Crucial : on s'arrête ici si le partage a réussi !
                 } catch (err) {
+                    // Si l'utilisateur a juste annulé le menu de partage, on s'arrête aussi
                     if (err.name === 'AbortError') return;
                 }
             }
 
-            const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+            // 2. Sécurité : Uniquement si navigator.share n'existe pas (sur un vieux navigateur par exemple)
+            const blob = new Blob([jsonString], { type: "application/json" });
             const blobUrl = URL.createObjectURL(blob);
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", blobUrl);
