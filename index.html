@@ -617,6 +617,7 @@
         }
 
         // UTILISATION DU MENU DE PARTAGE NATIF APPLE POUR iCLOUD
+                // NOUVELLE VERSION CORRIGÉE POUR FORCER L'APPARITION DE "ENREGISTRER DANS FICHIERS"
         async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -625,15 +626,16 @@
             };
             
             const jsonString = JSON.stringify(dataToExport, null, 2);
-            const fileName = "sauvegarde_calendrier.json";
+            // On utilise .txt au lieu de .json pour forcer iOS à afficher l'application "Fichiers"
+            const fileName = "sauvegarde_calendrier.txt"; 
 
             if (navigator.canShare && navigator.share) {
                 try {
-                    const file = new File([jsonString], fileName, { type: "application/json" });
+                    // On le fait passer pour un fichier texte brut, totalement compatible avec iCloud
+                    const file = new File([jsonString], fileName, { type: "text/plain" });
                     await navigator.share({
                         files: [file],
-                        title: 'Sauvegarde Calendrier',
-                        text: 'Fichier de sauvegarde de mon calendrier'
+                        title: 'Sauvegarde Calendrier'
                     });
                     return; 
                 } catch (err) {
@@ -641,8 +643,8 @@
                 }
             }
 
-            // Solution de secours (Téléchargement de secours)
-            const blob = new Blob([jsonString], { type: "application/octet-stream" });
+            // Solution de secours si le partage échoue
+            const blob = new Blob([jsonString], { type: "text/plain" });
             const blobUrl = URL.createObjectURL(blob);
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", blobUrl);
