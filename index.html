@@ -617,7 +617,7 @@
             });
         }
 
-        // EXPORT UNIQUE EN .TXT MAIS RECONNU PAR LE CALENDRIER
+        // PARTAGE EN TEXTE BRUT POUR FORCER UN SEUL ÉLÉMENT SUR IPAD
 async function exportBackup() {
     const dataToExport = {
         appointments: appointments,
@@ -625,22 +625,23 @@ async function exportBackup() {
         customCategories: customCategories
     };
     
+    // On crée la chaîne de texte compacte
     const jsonString = JSON.stringify(dataToExport);
-    // On met l'extension .json.txt : Safari ne fera pas de doublon, et tu choisis ton dossier !
-    const fileName = "sauvegarde_calendrier.json.txt";
 
     if (navigator.canShare && navigator.share) {
         try {
-            const blob = new Blob([jsonString], { type: "text/plain;charset=utf-8" });
-            const file = new File([blob], fileName, { type: "text/plain;charset=utf-8" });
-            
+            // En partageant le texte DIRECTEMENT (sans objet File), 
+            // l'iPad ne peut pas créer de doublon. Il n'y aura qu'UN SEUL élément.
             await navigator.share({
-                files: [file],
-                title: 'Sauvegarde'
+                title: 'Sauvegarde Calendrier',
+                text: jsonString
             });
         } catch (err) {
             if (err.name === 'AbortError') return;
+            alert("Erreur : " + err.message);
         }
+    } else {
+        alert("Le partage n'est pas supporté.");
     }
 }
 
