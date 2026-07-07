@@ -456,7 +456,8 @@
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder (iCloud)</button>
                         <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer (iCloud)</button>
-                        <input type="file" id="importFileEl" accept=".json,.txt,*/*" style="display: none;" onchange="importBackup(this)">
+                        <!-- LE BOUTON ACCEPTE TOUT SANS AUCUN BLOCAGE GRISÉ -->
+                        <input type="file" id="importFileEl" accept=".json,.txt,text/plain,*/*" style="display: none;" onchange="importBackup(this)">
                     </div>
 
                     <h3>Couleurs de l'interface</h3>
@@ -616,9 +617,7 @@
             });
         }
 
-        // SOLUTION ULTIME : TYPE APPLICATION/JSON RECONNU MAIS FORCE EN TANT QUE FICHIER SECURISE VIA SHARE
-                      // LA MÉTHODE FINALE POUR CONTOURNER LE BLOCAGE SAFARI IPAD
-                // MÉTHODE EXCLUSIVE IPAD : PASSE UNIQUEMENT PAR LE MENU DE PARTAGE NATIF
+        // EXPORT PARFAIT EN TXT POUR FAIRE PLAISIR À SAFARI IPAD
         async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -626,34 +625,38 @@
                 customCategories: customCategories
             };
             
-            const jsonString = JSON.stringify(dataToExport, null, 2);
-            const fileName = "sauvegarde_calendrier.json";
+            const jsonString = JSON.stringify(dataToExport);
+            const fileName = "sauvegarde_calendrier.txt"; // Fichier texte pur accepté partout
 
             if (navigator.canShare && navigator.share) {
                 try {
-                    // On crée un fichier binaire brut pour que Safari ne cherche pas à l'analyser
-                    const blob = new Blob([jsonString], { type: "application/octet-stream" });
-                    const file = new File([blob], fileName, { type: "application/octet-stream" });
-                    
-                    // On ouvre le menu natif de l'iPad
+                    const file = new File([jsonString], fileName, { type: "text/plain;charset=utf-8" });
                     await navigator.share({
                         files: [file],
                         title: 'Sauvegarde Calendrier'
                     });
+                    return; 
                 } catch (err) {
-                    // Gestion de l'annulation par l'utilisateur
                     if (err.name === 'AbortError') return;
-                    alert("Erreur lors du partage : " + err.message);
                 }
-            } else {
-                alert("Le système de partage n'est pas supporté par votre navigateur. Essayez d'ajouter l'application à l'écran d'accueil.");
             }
+
+            const blob = new Blob([jsonString], { type: "text/plain;charset=utf-8" });
+            const blobUrl = URL.createObjectURL(blob);
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", blobUrl);
+            downloadAnchor.setAttribute("download", fileName);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            document.body.removeChild(downloadAnchor);
+            URL.revokeObjectURL(blobUrl);
         }
 
         function triggerImport() {
             document.getElementById('importFileEl').click();
         }
 
+        // L'IMPORT NETTOIE ET LIT LES FICHIERS TEXTE SANS ERREUR DE CORRUPTION
         function importBackup(input) {
             const file = input.files[0];
             if (!file) return;
@@ -663,10 +666,12 @@
                 try {
                     let content = e.target.result;
                     
-                    // Nettoyage de sécurité au cas où l'iPad aurait collé des guillemets Apple ou espaces bizarres
+                    // Sécurité totale : on nettoie les guillemets intelligents qu'iOS adore insérer dans les fichiers .txt
                     content = content.replace(/[\u201c\u201d\u201e\u201f\u00ab\u00bb]/g, '"'); 
                     
+                    // Décodage du JSON contenu dans le fichier texte
                     const importedData = JSON.parse(content);
+                    
                     if (importedData.appointments) {
                         appointments = importedData.appointments;
                         localStorage.setItem('web_appointments', JSON.stringify(appointments));
@@ -680,10 +685,10 @@
                         localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
                     }
                     
-                    alert("Sauvegarde importée avec succès ! L'application va se rafraîchir.");
+                    alert("Sauvegarde importée avec succès !");
                     location.reload();
                 } catch (err) {
-                    alert("Erreur : Le fichier de sauvegarde est corrompu ou invalide.");
+                    alert("Erreur : Le fichier sélectionné n'est pas une sauvegarde valide.");
                 }
             };
             reader.readAsText(file);
