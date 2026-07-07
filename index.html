@@ -617,8 +617,8 @@
             });
         }
 
-        // EXPORT COMPATIBLE IPAD SANS DOUBLON TEXTE
-function exportBackup() {
+        // EXPORT UNIQUE EN .TXT MAIS RECONNU PAR LE CALENDRIER
+async function exportBackup() {
     const dataToExport = {
         appointments: appointments,
         uiSettings: uiSettings,
@@ -626,23 +626,22 @@ function exportBackup() {
     };
     
     const jsonString = JSON.stringify(dataToExport);
-    const fileName = "sauvegarde_calendrier.json";
+    // On met l'extension .json.txt : Safari ne fera pas de doublon, et tu choisis ton dossier !
+    const fileName = "sauvegarde_calendrier.json.txt";
 
-    // On crée un lien invisible pour forcer le téléchargement direct
-    const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
-    const blobUrl = URL.createObjectURL(blob);
-    const downloadAnchor = document.createElement('a');
-    
-    downloadAnchor.setAttribute("href", blobUrl);
-    downloadAnchor.setAttribute("download", fileName);
-    
-    // On simule le clic
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    
-    // Nettoyage de la mémoire
-    document.body.removeChild(downloadAnchor);
-    URL.revokeObjectURL(blobUrl);
+    if (navigator.canShare && navigator.share) {
+        try {
+            const blob = new Blob([jsonString], { type: "text/plain;charset=utf-8" });
+            const file = new File([blob], fileName, { type: "text/plain;charset=utf-8" });
+            
+            await navigator.share({
+                files: [file],
+                title: 'Sauvegarde'
+            });
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+        }
+    }
 }
 
         function triggerImport() {
