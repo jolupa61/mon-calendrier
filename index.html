@@ -207,7 +207,7 @@
             background-color: #f2f2f7;
         }
 
-        /* FENÊTRES MODALES (RDV & RÉGLAGES) */
+        /* FENÊTRES MODALES */
         .modal {
             display: none;
             position: fixed;
@@ -285,7 +285,7 @@
             color: white;
         }
 
-        /* SÉLECTEURS GRAPHIQUES (COULEURS ET ICÔNES) */
+        /* SÉLECTEURS GRAPHIQUES */
         .picker-container {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -456,7 +456,8 @@
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder (iCloud)</button>
                         <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer (iCloud)</button>
-                        <input type="file" id="importFileEl" accept=".json" style="display: none;" onchange="importBackup(this)">
+                        <!-- CORRECTION DU BOUTON ICI POUR NE PLUS GRISER LES FICHIERS -->
+                        <input type="file" id="importFileEl" accept=".json,.txt,text/plain" style="display: none;" onchange="importBackup(this)">
                     </div>
 
                     <h3>Couleurs de l'interface</h3>
@@ -616,8 +617,7 @@
             });
         }
 
-        // UTILISATION DU MENU DE PARTAGE NATIF APPLE POUR iCLOUD
-                // NOUVELLE VERSION CORRIGÉE POUR FORCER L'APPARITION DE "ENREGISTRER DANS FICHIERS"
+        // TEXTE BRUT FORCE LE COMPORTEMENT DE L'APPLICATION "FICHIERS" SUR iOS
         async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -626,12 +626,10 @@
             };
             
             const jsonString = JSON.stringify(dataToExport, null, 2);
-            // On utilise .txt au lieu de .json pour forcer iOS à afficher l'application "Fichiers"
-            const fileName = "sauvegarde_calendrier.txt"; 
+            const fileName = "sauvegarde_calendrier.txt";
 
             if (navigator.canShare && navigator.share) {
                 try {
-                    // On le fait passer pour un fichier texte brut, totalement compatible avec iCloud
                     const file = new File([jsonString], fileName, { type: "text/plain" });
                     await navigator.share({
                         files: [file],
@@ -643,7 +641,6 @@
                 }
             }
 
-            // Solution de secours si le partage échoue
             const blob = new Blob([jsonString], { type: "text/plain" });
             const blobUrl = URL.createObjectURL(blob);
             const downloadAnchor = document.createElement('a');
