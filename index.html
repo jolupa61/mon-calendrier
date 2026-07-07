@@ -619,6 +619,7 @@
         // SOLUTION ULTIME : TYPE APPLICATION/JSON RECONNU MAIS FORCE EN TANT QUE FICHIER SECURISE VIA SHARE
                 // VERSION CORRIGÉE : 100% JSON ET PLUS AUCUN DOUBLON TXT
                 // FORCE UNIQUEMENT LE JSON - AUCUNE OPTION TXT POSSIBLE
+                // EXTENSION BLINDÉE POUR SAFARI IPAD - REFUSETXT
         async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
@@ -626,11 +627,10 @@
                 customCategories: customCategories
             };
             
-            // On génère une chaîne JSON ultra-propre
             const jsonString = JSON.stringify(dataToExport, null, 2);
             const fileName = "sauvegarde_calendrier.json";
 
-            // ÉTAPE 1 : On tente le partage Apple natif, mais configuré pour le JSON pur
+            // ÉTAPE 1 : On tente le partage Apple natif
             if (navigator.canShare && navigator.share) {
                 try {
                     const blob = new Blob([jsonString], { type: "application/json" });
@@ -640,15 +640,15 @@
                         files: [file],
                         title: 'Sauvegarde'
                     });
-                    return; // On stoppe tout ici si ça fonctionne
+                    return; 
                 } catch (err) {
                     if (err.name === 'AbortError') return;
-                    // Si l'iPad bloque le partage du JSON, le code descend à l'étape 2
                 }
             }
 
-            // ÉTAPE 2 : Secours (Téléchargement direct) - Changé en application/json STRICT
-            const blob = new Blob([jsonString], { type: "application/json" });
+            // ÉTAPE 2 : Secours Safari iPad -> On force le type en "octet-stream" 
+            // pour empêcher Safari de renommer le fichier en .txt
+            const blob = new Blob([jsonString], { type: "application/octet-stream" });
             const blobUrl = URL.createObjectURL(blob);
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", blobUrl);
