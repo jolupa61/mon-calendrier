@@ -452,12 +452,11 @@
                 <div style="width:1px; background:#ccc; margin: 0 10px;"></div>
 
                 <div class="settings-col">
-                    <h3>Sauvegarde (Zéro Fichier)</h3>
-                    <p style="font-size:12px; color:#666; margin-bottom:10px;">Cliquez sur le bouton vert, puis allez coller votre sauvegarde dans l'application <b>Notes</b> de votre iPad.</p>
+                    <h3>Sauvegarde iCloud</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-success" onclick="copyBackupToClipboard()" style="flex: 1;"><i class="fa-solid fa-copy"></i> 1. Copier la Sauvegarde</button>
-                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-paste"></i> 2. Importer</button>
-                        <input type="file" id="importFileEl" accept=".json,.txt" style="display: none;" onchange="importBackup(this)">
+                        <button class="btn btn-success" onclick="exportBackup()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder</button>
+                        <button class="btn" onclick="triggerImport()" style="flex: 1;"><i class="fa-solid fa-cloud-arrow-down"></i> Importer</button>
+                        <input type="file" id="importFileEl" accept=".json,.txt,text/plain" style="display: none;" onchange="importBackup(this)">
                     </div>
 
                     <h3 style="margin-top:20px;">Couleurs de l'interface</h3>
@@ -617,22 +616,33 @@
             });
         }
 
-        // COPIE EN UN CLIC DANS LE PRESSE-PAPIER DE L'IPAD
-        function copyBackupToClipboard() {
+        // EXPORT STANDARD : OUVRE LE MENU DE PARTAGE IPAD POUR ENREGISTRER OU ON VEUT
+        async function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
                 customCategories: customCategories
             };
             
-            const jsonString = JSON.stringify(dataToExport);
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const fileName = "sauvegarde_calendrier.json";
 
-            // Méthode moderne et rapide pour copier du texte directement
-            navigator.clipboard.writeText(jsonString).then(() => {
-                alert("Sauvegarde copiée ! Ouvrez l'application Notes de votre iPad, créez une note, restez appuyé et faites 'Coller'. Vous aurez ainsi votre sauvegarde sous la main.");
-            }).catch(err => {
-                alert("Impossible de copier automatiquement.");
-            });
+            if (navigator.canShare && navigator.share) {
+                try {
+                    const blob = new Blob([jsonString], { type: "application/json" });
+                    const file = new File([blob], fileName, { type: "application/json" });
+                    
+                    await navigator.share({
+                        files: [file],
+                        title: 'Sauvegarde Calendrier'
+                    });
+                } catch (err) {
+                    if (err.name === 'AbortError') return;
+                    alert("Erreur : " + err.message);
+                }
+            } else {
+                alert("Le partage n'est pas supporté.");
+            }
         }
 
         function triggerImport() {
@@ -666,7 +676,7 @@
                     alert("Sauvegarde importée avec succès !");
                     location.reload();
                 } catch (err) {
-                    alert("Erreur : Fichier ou format invalide.");
+                    alert("Erreur : Fichier invalide.");
                 }
             };
             reader.readAsText(file);
