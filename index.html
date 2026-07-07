@@ -617,46 +617,29 @@
         }
 
         // SOLUTION ULTIME : TYPE APPLICATION/JSON RECONNU MAIS FORCE EN TANT QUE FICHIER SECURISE VIA SHARE
-                // VERSION CORRIGÉE : 100% JSON ET PLUS AUCUN DOUBLON TXT
-                // FORCE UNIQUEMENT LE JSON - AUCUNE OPTION TXT POSSIBLE
-                // EXTENSION BLINDÉE POUR SAFARI IPAD - REFUSETXT
-        async function exportBackup() {
+                      // LA MÉTHODE FINALE POUR CONTOURNER LE BLOCAGE SAFARI IPAD
+        function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
                 customCategories: customCategories
             };
             
-            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const jsonString = JSON.stringify(dataToExport);
             const fileName = "sauvegarde_calendrier.json";
 
-            // ÉTAPE 1 : On tente le partage Apple natif
-            if (navigator.canShare && navigator.share) {
-                try {
-                    const blob = new Blob([jsonString], { type: "application/json" });
-                    const file = new File([blob], fileName, { type: "application/json" });
-                    
-                    await navigator.share({
-                        files: [file],
-                        title: 'Sauvegarde'
-                    });
-                    return; 
-                } catch (err) {
-                    if (err.name === 'AbortError') return;
-                }
-            }
+            // Encodage en Base64 pour forcer Safari à le voir comme un flux de données propre
+            const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
+            const dataUrl = "data:application/json;charset=utf-8;base64," + base64Data;
 
-            // ÉTAPE 2 : Secours Safari iPad -> On force le type en "octet-stream" 
-            // pour empêcher Safari de renommer le fichier en .txt
-            const blob = new Blob([jsonString], { type: "application/octet-stream" });
-            const blobUrl = URL.createObjectURL(blob);
             const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", blobUrl);
+            downloadAnchor.setAttribute("href", dataUrl);
             downloadAnchor.setAttribute("download", fileName);
+            
+            // Astuce spécifique iOS/Safari : on simule un clic forcé dans le document
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             document.body.removeChild(downloadAnchor);
-            URL.revokeObjectURL(blobUrl);
         }
 
         function triggerImport() {
