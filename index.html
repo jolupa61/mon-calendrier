@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Calendrier</title>
     
     <link rel="manifest" href="manifest.json">
@@ -15,7 +15,8 @@
     
     <style>
         :root {
-            --bg-default: #F2F2F7;
+            --bg-app: #FFFFFF; /* Le fond de l'application */
+            --bg-default: #F2F2F7; /* Le fond des cases */
             --text-default: #000000;
             --grid-default: #E5E5EA;
             --weekend-bg: #FFE5E5;
@@ -23,31 +24,54 @@
             --primary-color: #007AFF;
         }
 
-        body {
+        html, body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #ffffff;
-            color: var(--text-default);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+            padding: 0;
+            height: 100%;
+            width: 100%;
             overflow: hidden;
         }
 
-        /* BARRE DE NAVIGATION */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-app);
+            color: var(--text-default);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* BARRE DE NAVIGATION MODIFIÉE POUR L'ALIGNEMENT DES BOUTONS */
         .header-bar {
             background-color: var(--bg-default);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 20px;
+            padding: 12px 20px; /* Remis à 20px pour coller proprement aux bords gauche/droite */
             border-bottom: 1px solid var(--grid-default);
+            flex-shrink: 0;
         }
 
-        .header-left, .header-right {
+        .header-left {
             display: flex;
             align-items: center;
             gap: 12px;
+            flex: 1; /* Aligne ce bloc vers la gauche */
+            justify-content: flex-start;
+        }
+
+        .header-middle {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1; /* Aligne ce bloc vers la droite */
+            justify-content: flex-end;
         }
 
         .btn {
@@ -62,10 +86,15 @@
             align-items: center;
             gap: 6px;
             color: inherit;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(0,0,0,0.12);
         }
 
         .btn-circle {
-            padding: 10px;
+            padding: 0;
             border-radius: 50%;
             width: 38px;
             height: 38px;
@@ -78,6 +107,7 @@
             background-color: var(--primary-color);
             color: white;
         }
+        .btn-primary:hover { background-color: #0062cc; }
 
         .btn-success {
             background-color: #34C759;
@@ -87,17 +117,18 @@
         .month-title {
             font-size: 22px;
             font-weight: bold;
-            min-width: 165px;
+            min-width: 180px;
             text-align: center;
         }
 
-        /* CALENDRIER */
+        /* CALENDRIER AVEC FIX MAQUETTE MAC */
         .calendar-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             padding: 15px 20px;
-            overflow: hidden;
+            box-sizing: border-box;
+            background-color: var(--bg-app);
         }
 
         .weekdays-grid {
@@ -105,37 +136,41 @@
             grid-template-columns: repeat(7, 1fr);
             text-align: center;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
             margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
         .days-grid {
             flex: 1;
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: 1fr;
+            grid-template-rows: repeat(6, 1fr);
             gap: 12px;
+            min-height: 0;
         }
 
         .day-cell {
             background-color: var(--bg-default);
-            border: 2px solid var(--grid-default);
+            border: 1px solid var(--grid-default);
             border-radius: 12px;
             padding: 10px;
             display: flex;
             flex-direction: column;
             cursor: pointer;
             position: relative;
-            transition: transform 0.1s;
+            box-sizing: border-box;
+            transition: transform 0.1s, box-shadow 0.1s;
         }
 
         .day-cell:hover {
-            transform: scale(1.01);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .day-number {
-            font-size: 22px;
-            font-weight: 900;
+            font-size: 18px;
+            font-weight: 800;
             margin-bottom: 5px;
         }
 
@@ -144,31 +179,36 @@
         }
 
         .empty-cell {
-            visibility: hidden;
+            pointer-events: none;
+            background: transparent !important;
+            border: 1px dashed transparent !important;
         }
 
-        /* BADGES RDV DANS LES CASES */
+        /* BADGES RDV CORRIGÉS */
         .rdv-dots-container {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
             margin-top: auto;
+            max-height: 42px;
+            overflow: hidden;
         }
 
         .rdv-badge {
-            width: 38px;
-            height: 38px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            border: 2px solid white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            font-size: 16px;
+            border: 1.5px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 12px;
+            cursor: pointer;
         }
 
-        /* LISTE DÉROULANTE TOUS LES RDV */
+        /* LISTE DEROULANTE */
         .dropdown {
             position: relative;
             display: inline-block;
@@ -207,7 +247,7 @@
             background-color: #f2f2f7;
         }
 
-        /* FENÊTRES MODALES */
+        /* MODALES ET PARAVENT ANTI-CLIC */
         .modal {
             display: none;
             position: fixed;
@@ -215,15 +255,23 @@
             background-color: rgba(0,0,0,0.4);
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: -1;
             backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+            z-index: 100;
+            opacity: 1;
         }
 
         .modal-content {
             background-color: white;
             padding: 25px;
             border-radius: 16px;
-            width: 850px;
+            width: 600px;
             max-width: 90%;
             max-height: 85vh;
             overflow-y: auto;
@@ -241,7 +289,7 @@
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -249,7 +297,7 @@
 
         .form-group label {
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .form-group input, .form-group textarea, .form-group select {
@@ -258,12 +306,14 @@
             border-radius: 8px;
             font-size: 15px;
             font-family: inherit;
+            box-sizing: border-box;
         }
 
         .time-select-container {
             display: flex;
             gap: 10px;
         }
+        .time-select-container select { flex: 1; }
 
         .modal-actions {
             display: flex;
@@ -284,20 +334,21 @@
             background-color: #FF3B30;
             color: white;
         }
+        .btn-danger:hover { background-color: #d32f2f; }
 
         /* SÉLECTEURS GRAPHIQUES */
         .picker-container {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
+            gap: 8px;
             background: #f8f8fa;
             padding: 12px;
             border-radius: 10px;
         }
 
         .color-dot-opt {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             cursor: pointer;
             border: 3px solid transparent;
@@ -311,21 +362,23 @@
         .icon-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
+            gap: 8px;
             background: #f8f8fa;
             padding: 12px;
             border-radius: 10px;
+            max-height: 120px;
+            overflow-y: auto;
         }
 
         .icon-opt {
-            height: 44px;
+            height: 38px;
             background: white;
             border: 1px solid #e5e5e5;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             transition: all 0.15s;
         }
@@ -358,7 +411,7 @@
             <select id="yearSelect" class="btn" onchange="changeYear(this.value)"></select>
         </div>
         
-        <div class="header-middle" style="display: flex; align-items: center; gap: 15px;">
+        <div class="header-middle">
             <button class="btn" onclick="navigateMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
             <span class="month-title" id="monthTitle">Mois</span>
             <button class="btn" onclick="navigateMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
@@ -381,14 +434,14 @@
     </div>
 
     <div class="modal" id="rdvModal">
-        <div class="modal-content" style="width: 550px;">
+        <div class="modal-content">
             <h2 id="modalTitle" style="margin-top:0;">Nouveau RDV</h2>
             <input type="hidden" id="rdvId">
             <input type="hidden" id="rdvDateStr">
 
             <div class="form-group">
                 <label>Titre ou description</label>
-                <input type="text" id="rdvTitleInput" required placeholder="Ex: Dentiste, Ophtalmo, Coiffeur...">
+                <input type="text" id="rdvTitleInput" required placeholder="Ex: Dentiste, Ophtalmo...">
             </div>
 
             <div class="form-group">
@@ -430,7 +483,7 @@
     </div>
 
     <div class="modal" id="settingsModal">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 750px;">
             <h2 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom:10px;">Réglages Général</h2>
             
             <div class="settings-layout">
@@ -461,6 +514,10 @@
 
                     <h3 style="margin-top:20px;">Couleurs de l'interface</h3>
                     <div class="form-group">
+                        <label>Grand fond de l'application</label>
+                        <input type="color" id="setHexBgApp" onchange="saveInterfaceSettings()">
+                    </div>
+                    <div class="form-group">
                         <label>Couleur du texte général</label>
                         <input type="color" id="setHexText" onchange="saveInterfaceSettings()">
                     </div>
@@ -471,7 +528,7 @@
                     
                     <h3>Couleurs des cases</h3>
                     <div class="form-group">
-                        <label>Fond par défaut</label>
+                        <label>Fond par défaut (Semaine)</label>
                         <input type="color" id="setHexBg" onchange="saveInterfaceSettings()">
                     </div>
                     <div class="form-group">
@@ -500,6 +557,7 @@
         let appointments = JSON.parse(localStorage.getItem('web_appointments')) || [];
         
         let uiSettings = JSON.parse(localStorage.getItem('web_ui_settings')) || {
+            bgAppHex: "#FFFFFF",
             textHex: "#000000",
             gridHex: "#E5E5EA",
             bgHex: "#F2F2F7",
@@ -527,25 +585,25 @@
 
         const iconLibrary = [
             { class: "fa-calendar-days", name: "Calendrier / RDV" },
-            { class: "fa-stethoscope", name: "Médecin / Généraliste" },
+            { class: "fa-stethoscope", name: "Médecin" },
             { class: "fa-tooth", name: "Dentiste" },
-            { class: "fa-pills", name: "Pharmacie / Traitement" },
-            { class: "fa-glasses", name: "Lunettes / Ophtalmo / Opticien" },
-            { class: "fa-scissors", name: "Coiffeur / Esthétique" },
-            { class: "fa-briefcase", name: "Travail / Réunion" },
-            { class: "fa-house", name: "Maison / Famille" },
-            { class: "fa-wrench", name: "Artisan / Réparation" },
-            { class: "fa-phone", name: "Appel / Téléphone" },
-            { class: "fa-envelope", name: "Courrier / Administratif" },
-            { class: "fa-cart-shopping", name: "Shopping / Courses" },
-            { class: "fa-car", name: "Voiture / Garage" },
-            { class: "fa-train", name: "Train / Voyage" },
-            { class: "fa-plane", name: "Avion / Vacances" },
-            { class: "fa-utensils", name: "Restaurant / Repas" },
-            { class: "fa-paw", name: "Vétérinaire / Animaux" },
-            { class: "fa-dumbbell", name: "Sport / Bien-être" },
-            { class: "fa-gift", name: "Anniversaire / Cadeau" },
-            { class: "fa-bank", name: "Banque / Factures" }
+            { class: "fa-pills", name: "Pharmacie" },
+            { class: "fa-glasses", name: "Ophtalmo" },
+            { class: "fa-scissors", name: "Coiffeur" },
+            { class: "fa-briefcase", name: "Travail" },
+            { class: "fa-house", name: "Maison" },
+            { class: "fa-wrench", name: "Artisan" },
+            { class: "fa-phone", name: "Appel" },
+            { class: "fa-envelope", name: "Administratif" },
+            { class: "fa-cart-shopping", name: "Courses" },
+            { class: "fa-car", name: "Voiture" },
+            { class: "fa-train", name: "Train" },
+            { class: "fa-plane", name: "Vacances" },
+            { class: "fa-utensils", name: "Repas" },
+            { class: "fa-paw", name: "Animaux" },
+            { class: "fa-dumbbell", name: "Sport" },
+            { class: "fa-gift", name: "Cadeau" },
+            { class: "fa-bank", name: "Banque" }
         ];
 
         function init() {
@@ -581,12 +639,16 @@
         }
 
         function applyUiSettings() {
+            if (!uiSettings.bgAppHex) uiSettings.bgAppHex = "#FFFFFF";
+
+            document.documentElement.style.setProperty('--bg-app', uiSettings.bgAppHex);
             document.documentElement.style.setProperty('--bg-default', uiSettings.bgHex);
             document.documentElement.style.setProperty('--text-default', uiSettings.textHex);
             document.documentElement.style.setProperty('--grid-default', uiSettings.gridHex);
             document.documentElement.style.setProperty('--weekend-bg', uiSettings.weekendBgHex);
             document.documentElement.style.setProperty('--holiday-bg', uiSettings.holidayBgHex);
 
+            document.getElementById('setHexBgApp').value = uiSettings.bgAppHex;
             document.getElementById('setHexText').value = uiSettings.textHex;
             document.getElementById('setHexGrid').value = uiSettings.gridHex;
             document.getElementById('setHexBg').value = uiSettings.bgHex;
@@ -616,8 +678,7 @@
             });
         }
 
-        // EXPORT STANDARD : OUVRE LE MENU DE PARTAGE IPAD POUR ENREGISTRER OU ON VEUT
-        async function exportBackup() {
+        function exportBackup() {
             const dataToExport = {
                 appointments: appointments,
                 uiSettings: uiSettings,
@@ -625,96 +686,73 @@
             };
             
             const jsonString = JSON.stringify(dataToExport, null, 2);
-            const fileName = "sauvegarde_calendrier.json";
-
-            if (navigator.canShare && navigator.share) {
-                try {
-                    const blob = new Blob([jsonString], { type: "application/json" });
-                    const file = new File([blob], fileName, { type: "application/json" });
-                    
-                    await navigator.share({
-                        files: [file],
-                        title: 'Sauvegarde Calendrier'
-                    });
-                } catch (err) {
-                    if (err.name === 'AbortError') return;
-                    alert("Erreur : " + err.message);
-                }
-            } else {
-                alert("Le partage n'est pas supporté.");
-            }
+            const blob = new Blob([jsonString], { type: "application/json" });
+            
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "sauvegarde_calendrier.json";
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function triggerImport() {
-            document.getElementById('importFileEl').click();
+            window.webkit.messageHandlers.importSignal.postMessage("openFinder");
         }
 
         function importBackup(input) {
-            const file = input.files[0];
+            const file = (input.files && input.files[0]) ? input.files[0] : input;
             if (!file) return;
-
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     let content = e.target.result;
-                    content = content.replace(/[\u201c\u201d\u201e\u201f\u00ab\u00bb]/g, '"'); 
+                    content = content.replace(/[\u201c\u201d\u201e\u201f\u00ab\u00bb]/g, '"');
+                    
                     const importedData = JSON.parse(content);
                     
-                    if (importedData.appointments) {
-                        appointments = importedData.appointments;
-                        localStorage.setItem('web_appointments', JSON.stringify(appointments));
-                    }
-                    if (importedData.uiSettings) {
-                        uiSettings = importedData.uiSettings;
-                        localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
-                    }
-                    if (importedData.customCategories) {
-                        customCategories = importedData.customCategories;
-                        localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
-                    }
+                    if (importedData.appointments) appointments = importedData.appointments;
+                    if (importedData.uiSettings) uiSettings = importedData.uiSettings;
+                    if (importedData.customCategories) customCategories = importedData.customCategories;
+                    
+                    localStorage.setItem('web_appointments', JSON.stringify(appointments));
+                    localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
+                    localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
                     
                     alert("Sauvegarde importée avec succès !");
                     location.reload();
                 } catch (err) {
-                    alert("Erreur : Fichier invalide.");
+                    alert("Erreur : Le contenu du fichier est invalide.");
                 }
             };
             reader.readAsText(file);
         }
 
         function isHoliday(date) {
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-
+            const year = date.getFullYear(); const month = date.getMonth() + 1; const day = date.getDate();
             if ((month == 1 && day == 1) || (month == 5 && day == 1) || (month == 5 && day == 8) ||
                (month == 7 && day == 14) || (month == 8 && day == 15) || (month == 11 && day == 1) ||
-               (month == 11 && day == 11) || (month == 12 && day == 25)) {
-                return true;
-            }
+               (month == 11 && day == 11) || (month == 12 && day == 25)) return true;
 
             let a = year % 19, b = Math.floor(year / 100), c = year % 100;
-            let d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
-            let g = Math.floor((b - f + 1) / 3);
+            let d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
             let h = (19 * a + b - d - g + 15) % 30;
             let i = Math.floor(c / 4), k = c % 4;
             let l = (32 + 2 * e + 2 * i - h - k) % 7;
             let m = Math.floor((a + 11 * h + 22 * l) / 451);
-            let easterMonth = Math.floor((h + l - 7 * m + 114) / 31);
-            let easterDay = ((h + l - 7 * m + 114) % 31) + 1;
-
-            let easterDate = new Date(year, easterMonth - 1, easterDay);
+            let em = Math.floor((h + l - 7 * m + 114) / 31);
+            let ed = ((h + l - 7 * m + 114) % 31) + 1;
+            let easterDate = new Date(year, em - 1, ed);
             
             let easterMonday = new Date(easterDate); easterMonday.setDate(easterMonday.getDate() + 1);
             let ascension = new Date(easterDate); ascension.setDate(ascension.getDate() + 39);
             let pentecostMonday = new Date(easterDate); pentecostMonday.setDate(pentecostMonday.getDate() + 50);
-
             return isSameDay(date, easterMonday) || isSameDay(date, ascension) || isSameDay(date, pentecostMonday);
         }
 
-        function isSameDay(d1, d2) {
-            return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
-        }
+        function isSameDay(d1, d2) { return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear(); }
 
         function renderCalendar() {
             const year = currentDate.getFullYear();
@@ -725,7 +763,7 @@
             
             const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const gridOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
+            const gridOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
 
             const grid = document.getElementById('daysGrid');
             grid.innerHTML = '';
@@ -748,9 +786,7 @@
                     inlineStyle += `background-color: var(--bg-default);`;
                 }
 
-                if(isSameDay(targetDate, today)) {
-                    classes.push('day-today');
-                }
+                if(isSameDay(targetDate, today)) classes.push('day-today');
 
                 const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                 const dayRdvs = appointments.filter(r => r.dateStr === dateKey).sort((a,b) => a.hour - b.hour);
@@ -760,7 +796,7 @@
                     rdvHTML = `<div class="rdv-dots-container">`;
                     dayRdvs.forEach(rdv => {
                         let textBadgeColor = getAccessibleTextColor(rdv.color);
-                        let borderStyle = rdv.color.toUpperCase() === '#FFFFFF' ? 'border: 2px solid #000;' : '';
+                        let borderStyle = rdv.color.toUpperCase() === '#FFFFFF' ? 'border: 1px solid #000;' : '';
                         rdvHTML += `
                             <div class="rdv-badge" style="background-color: ${rdv.color}; color: ${textBadgeColor}; ${borderStyle}" onclick="event.stopPropagation(); editRdv('${rdv.id}')" title="${String(rdv.hour).padStart(2, '0')}h${String(rdv.minute).padStart(2, '0')} : ${rdv.title}">
                                 <i class="fa-solid ${rdv.icon || 'fa-calendar-days'}"></i>
@@ -778,12 +814,26 @@
             }
 
             document.getElementById('rdvCount').innerText = appointments.length;
-            document.getElementById('btnToday').style.opacity = (year === today.getFullYear() && month === today.getMonth()) ? '0.5' : '1';
+            
+            const isCurrentMonthAndYear = (year === today.getFullYear() && month === today.getMonth());
+            document.getElementById('btnToday').style.display = isCurrentMonthAndYear ? 'none' : 'flex';
         }
 
         function navigateMonth(val) { currentDate.setMonth(currentDate.getMonth() + val); renderCalendar(); }
         function changeYear(year) { currentDate.setFullYear(parseInt(year)); renderCalendar(); }
         function goToToday() { currentDate = new Date(); renderCalendar(); }
+
+        function openModal(modalId) {
+            const el = document.getElementById(modalId);
+            el.style.display = 'flex';
+            setTimeout(() => el.classList.add('active'), 10);
+        }
+
+        function closeModal(modalId) {
+            const el = document.getElementById(modalId);
+            el.classList.remove('active');
+            setTimeout(() => el.style.display = 'none', 150);
+        }
 
         function openNewRdv(dateKey) {
             document.getElementById('modalTitle').innerText = "Nouveau RDV";
@@ -804,7 +854,7 @@
             buildRdvCategorySelector();
 
             document.getElementById('btnDeleteRdv').style.display = 'none';
-            document.getElementById('rdvModal').style.display = 'flex';
+            openModal('rdvModal');
         }
 
         function buildRdvCategorySelector() {
@@ -821,7 +871,7 @@
                 let left = document.createElement('div');
                 left.style = "display:flex; align-items:center; gap:10px;";
                 let dot = document.createElement('div');
-                dot.style = `width:20px; height:20px; border-radius:50%; background-color:${cat.hex}; border:1px solid #ccc;`;
+                dot.style = `width:18px; height:18px; border-radius:50%; background-color:${cat.hex}; border:1px solid #ccc;`;
                 let txt = document.createElement('span');
                 txt.innerText = cat.name;
                 
@@ -857,7 +907,7 @@
             buildRdvCategorySelector();
 
             document.getElementById('btnDeleteRdv').style.display = 'block';
-            document.getElementById('rdvModal').style.display = 'flex';
+            openModal('rdvModal');
         }
 
         function saveRdv() {
@@ -877,11 +927,9 @@
                 rdv.location = location; rdv.notes = notes; rdv.color = currentSelectedColor; rdv.icon = currentSelectedIcon;
             } else {
                 appointments.push({
-                    id: Date.now().toString(),
-                    dateStr, title, hour, minute, location, notes, color: currentSelectedColor, icon: currentSelectedIcon
+                    id: Date.now().toString(), dateStr, title, hour, minute, location, notes, color: currentSelectedColor, icon: currentSelectedIcon
                 });
             }
-
             localStorage.setItem('web_appointments', JSON.stringify(appointments));
             closeModal('rdvModal');
             renderCalendar();
@@ -898,7 +946,7 @@
         function openSettings() {
             buildSettingsCategoriesList();
             buildNewCatColorPicker();
-            document.getElementById('settingsModal').style.display = 'flex';
+            openModal('settingsModal');
         }
 
         function buildSettingsCategoriesList() {
@@ -907,13 +955,11 @@
             customCategories.forEach((cat, index) => {
                 let div = document.createElement('div');
                 div.className = 'category-list-item';
-                
                 let dot = document.createElement('div');
                 dot.style = `width:24px; height:24px; border-radius:50%; background-color:${cat.hex}; border:1px solid #ccc; flex-shrink:0;`;
                 
                 let input = document.createElement('input');
-                input.type = 'text';
-                input.value = cat.name;
+                input.type = 'text'; input.value = cat.name;
                 input.onchange = (e) => {
                     customCategories[index].name = e.target.value;
                     localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
@@ -928,7 +974,6 @@
                     localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
                     buildSettingsCategoriesList();
                 };
-
                 div.appendChild(dot); div.appendChild(input); div.appendChild(btnDel);
                 container.appendChild(div);
             });
@@ -953,48 +998,36 @@
         function addNewCategory() {
             const nameInput = document.getElementById('newCatName');
             if(!nameInput.value) return alert("Indiquez un nom de catégorie");
-            
-            customCategories.push({
-                id: Date.now().toString(),
-                name: nameInput.value,
-                hex: newCatSelectedHex
-            });
+            customCategories.push({ id: Date.now().toString(), name: nameInput.value, hex: newCatSelectedHex });
             localStorage.setItem('web_custom_categories', JSON.stringify(customCategories));
             nameInput.value = '';
             buildSettingsCategoriesList();
         }
 
         function saveInterfaceSettings() {
+            uiSettings.bgAppHex = document.getElementById('setHexBgApp').value;
             uiSettings.textHex = document.getElementById('setHexText').value;
             uiSettings.gridHex = document.getElementById('setHexGrid').value;
             uiSettings.bgHex = document.getElementById('setHexBg').value;
             uiSettings.weekendBgHex = document.getElementById('setHexWeekend').value;
             uiSettings.holidayBgHex = document.getElementById('setHexHoliday').value;
-            
             localStorage.setItem('web_ui_settings', JSON.stringify(uiSettings));
             applyUiSettings();
             renderCalendar();
         }
 
         function clearAllData() {
-            if(confirm("Attention : détruire les données ?")) {
-                localStorage.clear();
-                location.reload();
-            }
+            if(confirm("Attention : détruire toutes les données ?")) { localStorage.clear(); location.reload(); }
         }
-
-        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 
         function toggleDropdown() {
             const drop = document.getElementById('allRdvDropdown');
             if(drop.style.display === 'block') { drop.style.display = 'none'; return; }
-
             drop.innerHTML = '';
             let sorted = [...appointments].sort((a,b) => {
                 if(a.dateStr !== b.dateStr) return a.dateStr.localeCompare(b.dateStr);
                 return a.hour - b.hour;
             });
-
             if(sorted.length === 0) {
                 drop.innerHTML = `<button disabled>Aucun rendez-vous enregistré</button>`;
             } else {
@@ -1011,11 +1044,8 @@
         }
 
         function getAccessibleTextColor(hex) {
-            let c = hex.substring(1);
-            let rgb = parseInt(c, 16);
-            let r = (rgb >> 16) & 0xff;
-            let g = (rgb >> 8) & 0xff;
-            let b = (rgb >> 0) & 0xff;
+            let c = hex.substring(1); let rgb = parseInt(c, 16);
+            let r = (rgb >> 16) & 0xff; let g = (rgb >> 8) & 0xff; let b = (rgb >> 0) & 0xff;
             let luma = 0.299 * r + 0.587 * g + 0.114 * b;
             return luma < 120 ? '#ffffff' : '#000000';
         }
@@ -1025,7 +1055,6 @@
                 document.getElementById('allRdvDropdown').style.display = 'none';
             }
         }
-
         window.onload = init;
     </script>
 </body>
